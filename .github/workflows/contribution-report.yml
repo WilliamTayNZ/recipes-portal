@@ -1,0 +1,32 @@
+name: Generate Commit Stats
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install gitpython
+
+      - name: Run commit stats script
+        run: python generate_commit_stats.py
+
+      - name: Archive stats output
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-stats
+          path: stats/
