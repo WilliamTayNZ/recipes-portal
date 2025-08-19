@@ -236,13 +236,11 @@ def test_recipe_hash():
     recipe_set = {recipe1, recipe2}
     assert len(recipe_set) == 1
 
-def test_recipe_add_nutrition(my_recipe, my_nutrition):
+def test_recipe_set_nutrition(my_recipe, my_nutrition):
     my_recipe.nutrition = my_nutrition
 
     assert my_recipe.nutrition.calories == 574
     assert my_recipe.nutrition.protein == 24.0
-
-
 
 def test_author_set_recipe(my_author):
     new_recipe = Recipe(200, "New Recipe", my_author)
