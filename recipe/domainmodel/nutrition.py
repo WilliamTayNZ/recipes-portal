@@ -10,15 +10,15 @@ class Nutrition:
                  cholesterol: int, sodium: int, carbohydrates: float, fiber: float,
                  sugar: float, protein: float):
         self.__id = nutrition_id
-        self.__calories = calories
-        self.__fat = fat
-        self.__saturated_fat = saturated_fat
-        self.__cholesterol = cholesterol
-        self.__sodium = sodium
-        self.__carbohydrates = carbohydrates
-        self.__fiber = fiber
-        self.__sugar = sugar
-        self.__protein = protein
+        self.__calories = calories  # kcal
+        self.__fat = fat  # g
+        self.__saturated_fat = saturated_fat  # g
+        self.__cholesterol = cholesterol  # mg
+        self.__sodium = sodium  # mg
+        self.__carbohydrates = carbohydrates  # g
+        self.__fiber = fiber  # g
+        self.__sugar = sugar  # g
+        self.__protein = protein  # g
 
     def __repr__(self) -> str:
         return (f"Nutrition(id={self.__id}, calories={self.__calories}, fat={self.__fat}, "
