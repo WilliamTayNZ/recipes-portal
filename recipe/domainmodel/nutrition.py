@@ -27,7 +27,7 @@ class Nutrition:
                 f"sugar={self.__sugar}, protein={self.__protein})")
 
     def __eq__(self, other) -> bool:
-        return self.id == other.id
+        return isinstance(other, Nutrition) and self.id == other.id
 
     # For now, sorting is done by calories, but we might want the user to be able to sort by more attributes
     # Will ask a TA or lecturer
