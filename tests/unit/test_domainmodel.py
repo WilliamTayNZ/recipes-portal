@@ -294,3 +294,9 @@ def test_nutrition_hash():
 
     nutrition_set = {nutrition1, nutrition2}
     assert len(nutrition_set) == 1
+
+def test_nutrition_set_protein():
+    nutrition1 = Nutrition(nutrition_id=1)
+    assert nutrition1.protein == 0.0
+    nutrition1.protein = 20.0
+    assert nutrition1.protein == 20.0
