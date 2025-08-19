@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime
 
+from recipe.domainmodel.favourite import Favourite
 from recipe.domainmodel.user import User
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
@@ -42,6 +43,60 @@ def my_recipe(my_author, my_category):
         recipe_yield="4 portions",
         instructions=["Boil pasta", "Cook bacon", "Mix with eggs"]
     )
+
+@pytest.fixture
+def my_favourite(my_user, my_recipe):
+    return Favourite(my_user.id, my_user, my_recipe)
+
+# Favourite tests
+
+def test_favourite_construction(my_user, my_recipe):
+    favourite = Favourite(my_user.id, my_user, my_recipe)
+    assert favourite.user_id == my_user.id
+    assert favourite.user == my_user
+    assert favourite.recipe == my_recipe
+
+def test_favourite_equality(my_user, my_recipe):
+    favourite1 = Favourite(1, my_user, my_recipe)
+    favourite2 = Favourite(1, my_user, my_recipe)
+    favourite3 = Favourite(2, my_user, my_recipe)
+
+    assert favourite1 == favourite2
+    assert favourite1 != favourite3
+
+def test_favourite_less_than(my_user, my_recipe, my_category, my_author):
+    recipe = Recipe(
+        recipe_id=1,
+        name="Test Recipe",
+        author=my_author,
+        cook_time=30,
+        preparation_time=15,
+        created_date=datetime(2024, 1, 1),
+        description="Test description",
+        images=["test.jpg"],
+        category=my_category,
+        ingredient_quantities=["1 cup flour"],
+        ingredients=["flour"],
+        rating=4.0,
+        nutrition=None,
+        servings="2",
+        recipe_yield="2 portions",
+        instructions=["Mix ingredients"]
+    )
+
+    favourite1 = Favourite(1, my_user, recipe)
+    favourite2 = Favourite(1, my_user, my_recipe)
+
+    assert favourite1 < favourite2
+
+def test_favourite_hash(my_user, my_recipe):
+    favourite1 = Favourite(1, my_user, my_recipe)
+    favourite2 = Favourite(1, my_user, my_recipe)
+
+    favourite_set = {favourite1, favourite2}
+
+    assert len(favourite_set) == 1
+
 
 
 # User tests
@@ -231,4 +286,3 @@ def test_author_set_recipe(my_author):
 def test_author_set_recipe_invalid_type(my_author):
     with pytest.raises(TypeError):
         my_author.add_recipe("not a recipe")
-
