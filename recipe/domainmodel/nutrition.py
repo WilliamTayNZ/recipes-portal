@@ -7,7 +7,7 @@ allowing users to view and compare the health-related details of different recip
 
 class Nutrition:
     def __init__(self, nutrition_id: int, calories: int = 0, fat: float = 0.0, saturated_fat: float = 0.0,
-                 cholesterol: int = 0.0, sodium: int = 0.0, carbohydrates: float = 0.0, fiber: float = 0.0,
+                 cholesterol: int = 0, sodium: int = 0, carbohydrates: float = 0.0, fiber: float = 0.0,
                  sugar: float = 0.0, protein: float = 0.0):
         self.__id = nutrition_id
         self.__calories = calories  # kcal
