@@ -5,6 +5,7 @@ from recipe.domainmodel.user import User
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
 from recipe.domainmodel.recipe import Recipe
+from recipe.domainmodel.nutrition import Nutrition
 
 # Fixtures
 @pytest.fixture
@@ -43,6 +44,20 @@ def my_recipe(my_author, my_category):
         instructions=["Boil pasta", "Cook bacon", "Mix with eggs"]
     )
 
+@pytest.fixture
+def my_nutrition():
+    return Nutrition(
+        nutrition_id=2,
+        calories=574,
+        fat=27.0,
+        saturated_fat=10.0,
+        cholesterol=120,
+        sodium=850,
+        carbohydrates=56.0,
+        fiber=2.5,
+        sugar=3.0,
+        protein=24.0
+    )
 
 # User tests
 def test_user_construction():
@@ -167,7 +182,7 @@ def test_category_add_invalid_recipe(my_category):
 
 
 # Recipe tests
-def test_recipe_construction(my_author, my_category):
+def test_recipe_construction(my_author, my_category, my_nutrition):
     recipe = Recipe(
         recipe_id=1,
         name="Test Recipe",
@@ -181,7 +196,7 @@ def test_recipe_construction(my_author, my_category):
         ingredient_quantities=["1 cup flour"],
         ingredients=["flour"],
         rating=4.0,
-        nutrition=None,
+        nutrition=my_nutrition,
         servings="2",
         recipe_yield="2 portions",
         instructions=["Mix ingredients"]
@@ -189,6 +204,7 @@ def test_recipe_construction(my_author, my_category):
     assert recipe.id == 1
     assert recipe.name == "Test Recipe"
     assert recipe.author == my_author
+    assert recipe.nutrition == my_nutrition
 
 
 def test_recipe_equality():
@@ -220,6 +236,13 @@ def test_recipe_hash():
     recipe_set = {recipe1, recipe2}
     assert len(recipe_set) == 1
 
+def test_recipe_add_nutrition(my_recipe, my_nutrition):
+    my_recipe.nutrition = my_nutrition
+
+    assert my_recipe.nutrition.calories == 574
+    assert my_recipe.nutrition.protein == 24.0
+
+
 
 def test_author_set_recipe(my_author):
     new_recipe = Recipe(200, "New Recipe", my_author)
@@ -232,3 +255,44 @@ def test_author_set_recipe_invalid_type(my_author):
     with pytest.raises(TypeError):
         my_author.add_recipe("not a recipe")
 
+
+# Nutrition tests
+
+def test_nutrition_construction():
+    nutrition = Nutrition(
+    nutrition_id=1,
+    calories=420,
+    fat=12.5,
+    saturated_fat=4.5,
+    cholesterol=55,
+    sodium=640,
+    carbohydrates=52.0,
+    fiber=6.0,
+    sugar=8.0,
+    protein=22.0
+    )
+
+    assert nutrition.id == 1
+    assert nutrition.calories == 420
+    assert nutrition.fat == 12.5
+
+def test_nutrition_equality():
+    nutrition1 = Nutrition(nutrition_id=1)
+    nutrition2 = Nutrition(nutrition_id=2)
+    nutrition3 = Nutrition(nutrition_id=1)
+
+    assert nutrition1 != nutrition2
+    assert nutrition1 == nutrition3
+
+def test_nutrition_less_than(): # based on calories for now
+    nutrition1 = Nutrition(nutrition_id=1, calories =200)
+    nutrition2 = Nutrition(nutrition_id=2, calories=300)
+
+    assert nutrition1 < nutrition2
+
+def test_nutrition_hash():
+    nutrition1 = Nutrition(nutrition_id=1)
+    nutrition2 = Nutrition(nutrition_id=1)
+
+    nutrition_set = {nutrition1, nutrition2}
+    assert len(nutrition_set) == 1
