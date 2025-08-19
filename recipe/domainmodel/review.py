@@ -1,8 +1,8 @@
 from datetime import datetime
 
 class Review:
-    def __init__(self, review_id, user, recipe, rating, review_text, date=None):
-        self.__review_id = review_id
+    def __init__(self, review_id: int, user, recipe, rating, review_text, date=None):
+        self.__id = review_id
         self.__user = user
         self.__recipe = recipe
         self.__rating = rating
@@ -26,8 +26,8 @@ class Review:
         return hash(self.rating)
 
     @property
-    def review_id(self):
-        return self.__review_id
+    def id(self) -> int:
+        return self.__id
 
     @property
     def rating(self):
