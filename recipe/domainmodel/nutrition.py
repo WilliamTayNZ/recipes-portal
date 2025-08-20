@@ -6,19 +6,19 @@ allowing users to view and compare the health-related details of different recip
 '''
 
 class Nutrition:
-    def __init__(self, nutrition_id: int, calories: int, fat: float, saturated_fat: float,
-                 cholesterol: int, sodium: int, carbohydrates: float, fiber: float,
-                 sugar: float, protein: float):
+    def __init__(self, nutrition_id: int, calories: int = 0, fat: float = 0.0, saturated_fat: float = 0.0,
+                 cholesterol: int = 0, sodium: int = 0, carbohydrates: float = 0.0, fiber: float = 0.0,
+                 sugar: float = 0.0, protein: float = 0.0):
         self.__id = nutrition_id
-        self.__calories = calories
-        self.__fat = fat
-        self.__saturated_fat = saturated_fat
-        self.__cholesterol = cholesterol
-        self.__sodium = sodium
-        self.__carbohydrates = carbohydrates
-        self.__fiber = fiber
-        self.__sugar = sugar
-        self.__protein = protein
+        self.__calories = calories  # kcal
+        self.__fat = fat  # g
+        self.__saturated_fat = saturated_fat  # g
+        self.__cholesterol = cholesterol  # mg
+        self.__sodium = sodium  # mg
+        self.__carbohydrates = carbohydrates  # g
+        self.__fiber = fiber  # g
+        self.__sugar = sugar  # g
+        self.__protein = protein  # g
 
     def __repr__(self) -> str:
         return (f"Nutrition(id={self.__id}, calories={self.__calories}, fat={self.__fat}, "
@@ -27,7 +27,7 @@ class Nutrition:
                 f"sugar={self.__sugar}, protein={self.__protein})")
 
     def __eq__(self, other) -> bool:
-        return self.id == other.id
+        return isinstance(other, Nutrition) and self.id == other.id
 
     # For now, sorting is done by calories, but we might want the user to be able to sort by more attributes
     # Will ask a TA or lecturer
