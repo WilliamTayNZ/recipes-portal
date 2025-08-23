@@ -1,18 +1,16 @@
-from recipe import Recipe
-from user import User
 from datetime import datetime
 
 class Review:
-    def __init__(self, review_id : int, user : User, recipe: Recipe, rating : float, review : str, date: datetime):
-        self.__review_id = review_id
+    def __init__(self, review_id: int, user, recipe, rating, review_text, date=None):
+        self.__id = review_id
         self.__user = user
         self.__recipe = recipe
         self.__rating = rating
-        self.__review = review
-        self.__date = date
+        self.__review_text = review_text
+        self.__date = date if date else datetime.now()
 
     def __repr__(self) -> str:
-        return f"<User : {self.user.username} rated {self.recipe} {self.rating}/5 on {self.date} : {self.review}>"
+        return f"<User : {self.__user} rated {self.__recipe} {self.__rating}/5 on {self.__date} : {self.__review_text}>"
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Review):
@@ -28,20 +26,16 @@ class Review:
         return hash(self.rating)
 
     @property
-    def review_id(self) -> int:
-        return self.__review_id
+    def id(self) -> int:
+        return self.__id
 
     @property
-    def user(self) -> User:
-        return self.__user
-
-    @property
-    def recipe(self) -> Recipe:
-        return self.__recipe
-
-    @property
-    def rating(self) -> float:
+    def rating(self):
         return self.__rating
+
+    @property
+    def recipe(self):
+        return self.__recipe
 
     @property
     def review(self) -> str:
