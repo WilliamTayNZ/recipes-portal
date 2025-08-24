@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime
 
+from recipe.domainmodel.favourite import Favourite
 from recipe.domainmodel.review import Review
 from recipe.domainmodel.user import User
 from recipe.domainmodel.author import Author
@@ -59,13 +60,49 @@ def my_nutrition():
         sugar=3.0,
         protein=24.0
     )
+  
 @pytest.fixture
 def my_review():
     return Review(1,"Name","Recipe", 5.00, "Review",
                   datetime(2024, 1, 1))
+  
+@pytest.fixture
+def my_favourite():
+    return Favourite(1, "Name", "Recipe")
+  
+
+# Favourite tests
+def test_favourite_construction():
+    favourite = Favourite(1, "Name", "Recipe")
+    assert favourite.user_id == 1
+    assert favourite.user == "Name"
+    assert favourite.recipe == "Recipe"
+
+def test_favourite_equality(my_user, my_recipe):
+    favourite1 = Favourite(1, "Name", "Recipe")
+    favourite2 = Favourite(1, "Name", "Recipe")
+    favourite3 = Favourite(2, "Name", "Recipe")
+
+    assert favourite1 == favourite2
+    assert favourite1 != favourite3
+
+def test_favourite_less_than():
+
+    favourite1 = Favourite(1, "Name", "Recipe")
+    favourite2 = Favourite(2, "Name", "Recipe2")
+
+    assert favourite1 < favourite2
+
+def test_favourite_hash():
+    favourite1 = Favourite(1, "Name", "Recipe")
+    favourite2 = Favourite(1, "Name", "Recipe")
+
+    favourite_set = {favourite1, favourite2}
+
+    assert len(favourite_set) == 1
+    
 
 # Review tests
-
 def test_review_construction():
     review = Review(1,"Name","Recipe", 5.00, "Review",
                     datetime(2024, 1, 1))
@@ -93,7 +130,7 @@ def test_review_hash():
     review_set = {review1,review2}
 
     assert len(review_set) == 1
-
+    
 
 # User tests
 def test_user_construction():
