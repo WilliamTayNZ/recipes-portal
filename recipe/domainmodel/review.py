@@ -51,8 +51,8 @@ class Review:
         self.__rating = rating
         return self
 
-    def add_review(self, review: str):
-        self.__review_text = review
+    def add_review_text(self, review_text: str):
+        self.__review_text = review_text
         return self
 
     def add_date(self, date: datetime):
