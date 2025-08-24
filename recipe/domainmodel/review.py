@@ -38,8 +38,8 @@ class Review:
         return self.__recipe
 
     @property
-    def review(self) -> str:
-        return self.__review
+    def review_text(self) -> str:
+        return self.__review_text
 
     @property
     def date(self) -> datetime:
@@ -52,7 +52,7 @@ class Review:
         return self
 
     def add_review(self, review: str):
-        self.__review = review
+        self.__review_text = review
         return self
 
     def add_date(self, date: datetime):
