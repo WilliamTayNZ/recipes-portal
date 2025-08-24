@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime
 
+from recipe.domainmodel.review import Review
 from recipe.domainmodel.user import User
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
@@ -58,6 +59,41 @@ def my_nutrition():
         sugar=3.0,
         protein=24.0
     )
+@pytest.fixture
+def my_review():
+    return Review(1,"Name","Recipe", 5.00, "Review",
+                  datetime(2024, 1, 1))
+
+# Review tests
+
+def test_review_construction():
+    review = Review(1,"Name","Recipe", 5.00, "Review",
+                    datetime(2024, 1, 1))
+    assert review.id == 1
+    assert review.recipe == "Recipe"
+    assert review.rating == 5.00
+    assert review.review_text == "Review"
+
+def test_review_equality():
+    review1 = Review(1,"Name","Recipe", 5.00, "Review")
+    review2 = Review(1,"Name","Recipe", 5.00, "Review")
+    review3 = Review(  1,"Name","Recipe", 3.50, "Review")
+    assert review1 == review2
+    assert review1 != review3
+
+def test_review_less_than():
+    review1 = Review(1,"Name","Recipe", 4.00, "Review")
+    review2 = Review(1,"Name","Recipe", 5.00, "Review")
+
+    assert review1 < review2
+
+def test_review_hash():
+    review1 = Review(1,"Name","Recipe", 5.00, "Review")
+    review2 = Review(1,"Name","Recipe", 5.00, "Review")
+    review_set = {review1,review2}
+
+    assert len(review_set) == 1
+
 
 # User tests
 def test_user_construction():
