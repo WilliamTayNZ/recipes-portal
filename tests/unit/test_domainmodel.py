@@ -84,7 +84,7 @@ def test_favourite_equality(my_user, my_recipe):
 def test_favourite_less_than():
 
     favourite1 = Favourite(1, "Name", "Recipe")
-    favourite2 = Favourite(2, "Name", "Recipe")
+    favourite2 = Favourite(2, "Name", "Recipe2")
 
     assert favourite1 < favourite2
 
