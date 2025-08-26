@@ -2,6 +2,7 @@
 from datetime import datetime
 from flask import Flask, render_template
 
+from recipe.blueprints.home.home import home_blueprint
 # TODO: Access to the recipe should be implemented via the repository pattern and using blueprints, so this can not
 #  stay here!
 
@@ -26,10 +27,11 @@ def create_app():
     # Create the Flask app object.
     app = Flask(__name__)
 
-    @app.route('/')
-    def home():
-        some_recipe = create_some_recipe()
-        # Use Jinja to customize a predefined html page rendering the layout for showing a single recipe.
-        return render_template('index.html', recipe=some_recipe)
+    with app.app_context():
+        # Register blueprints.
+        from .blueprints.home.home import home_blueprint
+        app.register_blueprint(home_blueprint)
+
+
 
     return app
