@@ -54,6 +54,13 @@ class CSVDataReader:
                 # INSTRUCTIONS
                 instructions = ast.literal_eval(row["RecipeInstructions"]) if row["RecipeInstructions"] else []
 
+                # YIELD VALUE
+                yield_value = row["RecipeYield"].strip() if row["RecipeYield"] else ""
+                recipe_yield = "Not specified" if not yield_value or yield_value == "NA" else yield_value
+
+                # IMAGES
+                images = ast.literal_eval(row["Images"]) if row["Images"] else []
+
                 #RECIPE
                 recipe = Recipe(
                     recipe_id=int(row["RecipeId"]),
@@ -62,13 +69,13 @@ class CSVDataReader:
                     cook_time=row["CookTime"],
                     preparation_time=row["PrepTime"],
                     description=row["Description"],
-                    images=row["Images"],
+                    images=images,
                     category=category,
                     ingredient_quantities=ingredient_quantities,
                     ingredients=ingredients,
                     nutrition=nutrition,
                     servings=row["RecipeServings"],
-                    recipe_yield=row["RecipeYield"].strip() if row["RecipeYield"] else None,
+                    recipe_yield=recipe_yield,
                     instructions=instructions
                 )
 
