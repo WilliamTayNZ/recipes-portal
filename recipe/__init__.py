@@ -32,6 +32,7 @@ def create_app():
         from .blueprints.home.home import home_blueprint
         app.register_blueprint(home_blueprint)
 
-
+        from .blueprints.browse.browse import browse_blueprint
+        app.register_blueprint(browse_blueprint)
 
     return app
