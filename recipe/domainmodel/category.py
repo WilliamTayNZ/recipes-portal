@@ -35,8 +35,9 @@ class Category:
         return self.__recipes
 
     def add_recipe(self, recipe: Recipe) -> None:
-        from recipe.domainmodel.recipe import Recipe
-        if isinstance(recipe, Recipe):
+        if not isinstance(recipe, Recipe):
+            raise TypeError("Expected a Recipe instance")
+        if recipe not in self.__recipes:
             self.__recipes.append(recipe)
         else:
-            raise TypeError("Expected a Recipe instance")
+            raise ValueError("Recipe already exists for this category")
