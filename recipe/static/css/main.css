@@ -32,7 +32,8 @@ nav img {
 
 h1 {
     text-align: left;
-    font-size: 30px;
+    font-size: 33.667px;
+    letter-spacing: 1px;
 }
 p {
     font-size: 20px;
@@ -40,7 +41,6 @@ p {
     width: 90.0%;
     padding-bottom: 50px;
 }
-
 .header {
     text-align: left ;
     width: 45.0%;
@@ -48,26 +48,62 @@ p {
     padding-top: 20px;
     padding-left: 30px;
 }
+
+.plates img {
+    position: fixed;
+    top: -50px;
+    left: 520px;
+    height: 900px;
+    width:  80%;
+    object-fit: contain;
+    z-index: -1;
+    scale: 90%;
+}
+
 .feat-recipes {
     text-align: left ;
-    width: 45.0%;
+    width: 50.0%;
     margin: 20px;
-    padding-top: 20px;
+    padding-top: 15px;
     padding-left: 30px;
 }
 
-.flex-box {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    width: 50.0%;ç
+.feat-recipes h1 {
+    font-size: 31px;
 }
 
-.card img {
+.flex-box {
+    padding-top: 20px;
+    display: flex;
+    gap: 35px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.flex-box > div {
+    outline: 5px solid #9C1A1C;
+    width: 270px;
+    height: 150px;
+}
+.flex-box img {
     width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: 6px;
+    height: auto;
     display: block;
+    aspect-ratio: 16/9;
+}
+.flex-box p {
+    font-size: 12px;
+    padding-top: 10px;
+    width: 90.0%;
+    padding-bottom: 50px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%
+}
+footer p {
+    font-size: 17px;
+    padding-left: 50px;
 }
