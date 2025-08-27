@@ -168,8 +168,5 @@ def test_images_parsing(tmp_path):
     assert recipe.images == ["https://example.com/img1.jpg", "https://example.com/img2.jpg"]
 
 
-
-# FINAL FUCKING TEST: the image
-
 # py -m pytest -v tests/unit/test_csv_reader.py
 # Run from project root, to see the specific tests that were run
