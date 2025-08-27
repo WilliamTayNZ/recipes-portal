@@ -32,7 +32,7 @@ nav img {
 
 h1 {
     text-align: left;
-    font-size: 35px;
+    font-size: 30px;
 }
 p {
     font-size: 20px;
@@ -54,4 +54,20 @@ p {
     margin: 20px;
     padding-top: 20px;
     padding-left: 30px;
+}
+
+.flex-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 50.0%;ç
+}
+
+.card img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
 }
