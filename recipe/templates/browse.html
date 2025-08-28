@@ -1,18 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="../static/css/browse.css">
-</head>
-<body>
-
-    {% include 'navbar.html' %}
-
+{% extends "base.html" %}
+{% block title %}Browse{% endblock %}
+{% block content %}
     <div class="heading-cont">
         <h2>BROWSE RECIPES!</h2>
-        <p>Filter by: ALPHABET</p>
     </div>
 
-</body>
-</html>
+    <div class="recipes-cont">
+        {% for recipe in recipes %}
+                <div class="browse-card" onclick="location.href='/recipe/{{ recipe.id }}'">
+                    <div class="browse-card-cont">
+                        <img src="{{ recipe.images[0] }}" alt="recipe-image">
+                    </div>
+                    <h1>{{ recipe.name }}</h1>
+                    <p>{{ recipe.description }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if prev_recipe_url %}
+            <a href="{{ prev_recipe_url }}">&lt;</a> <!-- Single Left -->
+        {% endif %}
+        {% if first_recipe_url %}
+            <a href="{{ first_recipe_url }}">&laquo;</a> <!-- Double Left -->
+        {% endif %}
+        {% if next_recipe_url %}
+            <a href="{{ next_recipe_url }}">&gt;</a> <!-- Single Right -->
+        {% endif %}
+        {% if last_recipe_url %}
+            <a href="{{ last_recipe_url }}">&raquo;</a> <!-- Double Right -->
+        {% endif %}
+    </div>
+
+{% endblock %}
