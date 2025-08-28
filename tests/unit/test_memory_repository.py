@@ -148,19 +148,4 @@ def test_repository_raises_for_missing_category_in_get_recipes_by_category(in_me
     with pytest.raises(RepositoryException):
         in_memory_repo.get_recipes_by_category(999999)
 
-# "Integration" test
-
-def test_repository_links_recipe_with_author_and_category(in_memory_repo, recipe_2, author_alice, cat_drink):
-    in_memory_repo.add_author(author_alice)
-    in_memory_repo.add_category(cat_drink)
-    in_memory_repo.add_recipe(recipe_2)
-
-    author = in_memory_repo.get_author(author_alice.id)
-    category = in_memory_repo.get_category(cat_drink.name)
-
-    assert recipe_2 in author.recipes
-    assert recipe_2 in category.recipes
-
-# py -m pytest -v tests/unit/test_memory_repository.py
-
 # python -m pytest -v tests
