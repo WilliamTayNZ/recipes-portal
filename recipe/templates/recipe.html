@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ recipe.name }}</title>
+    <link rel="stylesheet" href="../static/css/recipe.css">
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <main class="recipe-container">
+        <!-- Recipe Header -->
+        <div class="recipe-header">
+            <h3 class="recipe-category">{{ recipe.category.name if recipe.category else "Uncategorized" }}</h3>
+            <h1 class="recipe-title">{{ recipe.name.upper() }}</h1>
+            <p class="recipe-author">By {{ recipe.author.name if recipe.author else "Unknown Author" }}</p>
+            <p class="recipe-description">{{ recipe.description if recipe.description else "No description available." }}</p>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="recipe-content">
+            <!-- Left Side - Image Gallery -->
+            <div class="image-gallery">
+                <a href="{{ url_for('browse_bp.browse') }}" class="back-link">&lt; Back to recipes</a>
+                
+                <div class="main-image-container">
+                    <div class="main-image">
+                        <img src="{{ recipe.images[0] if recipe.images else '../static/assets/usagi.png' }}" alt="{{ recipe.name }}" class="current-image" id="mainImage">
+                        <button class="nav-arrow left-arrow" onclick="previousImage()">&lt;</button>
+                        <button class="nav-arrow right-arrow" onclick="nextImage()">&gt;</button>
+                    </div>
+                </div>
+
+                <div class="thumbnail-container">
+                    {% if recipe.images %}
+                        {% for image in recipe.images %}
+                            <img src="{{ image }}" alt="{{ recipe.name }}" class="thumbnail" onclick="setMainImage('{{ image }}')">
+                        {% endfor %}
+                    {% else %}
+                        <img src="../static/assets/usagi.png" alt="{{ recipe.name }}" class="thumbnail active">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Side - Recipe Details -->
+            <div class="recipe-details">
+                <!-- Time and Date Info -->
+                <div class="info-boxes">
+                    <div class="info-box">
+                        <span class="info-label">PREP TIME</span>
+                        <span class="info-value">{{ recipe.preparation_time }} seconds</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label">COOK TIME</span>
+                        <span class="info-value">{{ recipe.cook_time }} seconds</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label">PUBLISHED</span>
+                        <span class="info-value">{{ recipe.date.strftime('%d{} %b %Y'.format('th' if 10 <= recipe.date.day % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(recipe.date.day % 10, 'th'))) if recipe.date else "Not specified" }}</span>
+                    </div>
+                </div>
+
+                <!-- Ingredients -->
+                <div class="ingredients-section">
+                    <h3 class="section-title">INGREDIENTS</h3>
+                    <div class="ingredients-list">
+                        {% if recipe.ingredients and recipe.ingredient_quantities %}
+                            {% for i in range(recipe.ingredients|length) %}
+                                <div class="ingredient-item">
+                                    {% if i < recipe.ingredient_quantities|length %}
+                                        <span class="quantity">{{ recipe.ingredient_quantities[i] }}</span>
+                                    {% endif %}
+                                    <span class="ingredient">{{ recipe.ingredients[i] }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No ingredients available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Instructions Section -->
+                <div class="instructions-section">
+                    <h3 class="section-title">INSTRUCTIONS</h3>
+                    <div class="instructions-list">
+                        {% if recipe.instructions %}
+                            {% for instruction in recipe.instructions %}
+                                <div class="instruction-step">
+                                    <span class="step-number">{{ loop.index }}.</span>
+                                    <span class="step-text">{{ instruction }}</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No instructions available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nutritional Information -->
+        <div class="nutrition-section">
+            <h3 class="section-title">NUTRITIONAL INFORMATION (PER</h3>
+            {% if recipe.nutrition %}
+                <div class="nutrition-grid">
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Calories</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.calories }} kcal</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Fat</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.fat }} g</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Saturated Fat</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.saturated_fat }} g</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Cholesterol</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.cholesterol }} mg</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Sodium</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.sodium }} mg</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Carbohydrates</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.carbohydrates }} g</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Fiber</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.fiber }} g</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Sugar</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.sugar }} g</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Protein</span>
+                        <span class="nutrition-value">{{ recipe.nutrition.protein }} g</span>
+                    </div>
+                </div>
+                <div class="recipe-servings">
+                    <div class="servings-item">
+                        <span class="servings-label">Recipe Servings</span>
+                        <span class="servings-value">{{ recipe.servings if recipe.servings else "Not specified" }}</span>
+                    </div>
+                    <div class="servings-item">
+                        <span class="servings-label">Recipe Yield</span>
+                        <span class="servings-value">{{ recipe.recipe_yield if recipe.recipe_yield else "Not specified" }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <p>No nutritional information available.</p>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Semi-fullscreen Image Modal -->
+    <div class="image-modal" id="imageModal" onclick="closeModal()">
+        <div class="modal-content">
+            <img src="" alt="" id="modalImage">
+            <button class="modal-nav-arrow left-arrow" onclick="previousImage()">&lt;</button>
+            <button class="modal-nav-arrow right-arrow" onclick="nextImage()">&gt;</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        let currentImageIndex = 0;
+        let images = {{ recipe.images|tojson if recipe.images else [] }};
+        
+        function setMainImage(imageSrc) {
+            document.getElementById('mainImage').src = imageSrc;
+            currentImageIndex = images.indexOf(imageSrc);
+        }
+        
+        function nextImage() {
+            if (images.length > 0) {
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                const newImage = images[currentImageIndex];
+                document.getElementById('mainImage').src = newImage;
+                document.getElementById('modalImage').src = newImage;
+            }
+        }
+        
+        function previousImage() {
+            if (images.length > 0) {
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                const newImage = images[currentImageIndex];
+                document.getElementById('mainImage').src = newImage;
+                document.getElementById('modalImage').src = newImage;
+            }
+        }
+        
+        function openModal() {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const mainImage = document.getElementById('mainImage');
+            
+            modalImage.src = mainImage.src;
+            modal.style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+        
+        // Make main image clickable to open modal
+        document.getElementById('mainImage').addEventListener('click', openModal);
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('imageModal').style.display === 'flex') {
+                if (e.key === 'ArrowLeft') {
+                    previousImage();
+                } else if (e.key === 'ArrowRight') {
+                    nextImage();
+                } else if (e.key === 'Escape') {
+                    closeModal();
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

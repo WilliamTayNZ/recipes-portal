@@ -1,6 +1,9 @@
 import os
 import csv
 import ast
+import re
+
+from datetime import datetime
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
 from recipe.domainmodel.nutrition import Nutrition
@@ -12,6 +15,13 @@ class CSVDataReader:
         self.__recipes = []
         self.__authors = {}
         self.__categories = {}
+        
+
+    def parse_date(self, date_str: str) -> datetime:
+        # Remove common ordinal suffixes
+        clean_str = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date_str)
+        # Parse the cleaned string
+        return datetime.strptime(clean_str, "%d %b %Y")
 
     def csv_read(self):
         with open(self.__csv_path, mode='r', newline='', encoding='utf-8') as file:
@@ -54,6 +64,17 @@ class CSVDataReader:
                 # INSTRUCTIONS
                 instructions = ast.literal_eval(row["RecipeInstructions"]) if row["RecipeInstructions"] else []
 
+                # YIELD VALUE
+                yield_value = row["RecipeYield"].strip() if row["RecipeYield"] else ""
+                recipe_yield = "Not specified" if not yield_value or yield_value == "NA" else yield_value
+
+                # IMAGES
+                images = ast.literal_eval(row["Images"]) if row["Images"] else []
+
+                # DATE
+                date_string = row["DatePublished"]
+                created_date = self.parse_date(date_string)
+
                 #RECIPE
                 recipe = Recipe(
                     recipe_id=int(row["RecipeId"]),
@@ -62,14 +83,15 @@ class CSVDataReader:
                     cook_time=row["CookTime"],
                     preparation_time=row["PrepTime"],
                     description=row["Description"],
-                    images=row["Images"],
+                    images=images,
                     category=category,
                     ingredient_quantities=ingredient_quantities,
                     ingredients=ingredients,
                     nutrition=nutrition,
                     servings=row["RecipeServings"],
-                    recipe_yield=row["RecipeYield"].strip() if row["RecipeYield"] else None,
-                    instructions=instructions
+                    recipe_yield=recipe_yield,
+                    instructions=instructions,
+                    created_date=created_date
                 )
 
                 #UPDATE RELATIONSHIPS
