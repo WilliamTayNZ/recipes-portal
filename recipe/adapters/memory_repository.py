@@ -35,6 +35,15 @@ class MemoryRepository(AbstractRepository):
     def get_number_of_recipe(self):
         return len(self.__recipes)
 
+    def get_recipes_by_name(self, name: str) -> List[Recipe]:
+        name = (name or "").strip().lower()
+        def _name_key(r: Recipe):
+            return (getattr(r, "name", "") or "").lower()
+        if not name:
+            return sorted(self.__recipes, key=_name_key)
+        matches = [r for r in self.__recipes if name in _name_key(r)]
+        return sorted(matches, key=_name_key)
+
     def get_first_recipe(self):
         return self.__recipes[0] if self.__recipes else None
 

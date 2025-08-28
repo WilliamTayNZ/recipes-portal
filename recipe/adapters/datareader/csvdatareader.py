@@ -59,7 +59,7 @@ class CSVDataReader:
                 recipe_yield = "Not specified" if not yield_value or yield_value == "NA" else yield_value
 
                 # IMAGES
-                images = ast.literal_eval(row["Images"]) if row["Images"] else []
+                images = ast.literal_eval(row.get("Images")) if row.get("Images") else []
 
                 #RECIPE
                 recipe = Recipe(
