@@ -1,6 +1,7 @@
 from pathlib import Path
 import pytest
 import csv
+from datetime import datetime
 
 from recipe.adapters.datareader.csvdatareader import CSVDataReader
 from recipe.domainmodel.author import Author
@@ -110,7 +111,7 @@ def test_deduplicates_categories_by_name(read_csv):
 def test_numeric_zeros_parse_correctly(tmp_path):
     row = {
         "RecipeId": "1", "Name": "X", "AuthorId": "1", "AuthorName": "A", "RecipeCategory": "C",
-        "CookTime": "0", "PrepTime": "0", "TotalTime": "0", "Description": "",
+        "CookTime": "0", "PrepTime": "0", "TotalTime": "0", "DatePublished": "1st Jan 2020", "Description": "",
         "Images": "",
         "RecipeIngredientQuantities": "['NA']",
         "RecipeIngredientParts": "['NA']",
@@ -138,7 +139,7 @@ def test_numeric_zeros_parse_correctly(tmp_path):
 def test_recipe_yield_none_when_NA(tmp_path):
     row = {
         "RecipeId": "2", "Name": "Y", "AuthorId": "1", "AuthorName": "A", "RecipeCategory": "C",
-        "CookTime": "15", "PrepTime": "5", "Description": "", "Images": "",
+        "CookTime": "15", "PrepTime": "5", "DatePublished": "9th Aug 2009", "Description": "", "Images": "",
         "RecipeIngredientQuantities": "['1']", "RecipeIngredientParts": "['sugar']", "RecipeInstructions": "['Stir']",
         "RecipeServings": "2", "RecipeYield": "NA",   # missing yield
         "Calories": "10", "FatContent": "1.0", "SaturatedFatContent": "0.5",
@@ -154,7 +155,7 @@ def test_recipe_yield_none_when_NA(tmp_path):
 def test_images_parsing(tmp_path):
     row_with_images = {
         "RecipeId": "1", "Name": "Test A", "AuthorId": "1", "AuthorName": "Author A", "RecipeCategory": "Category",
-        "CookTime": "10", "PrepTime": "5", "Description": "desc",
+        "CookTime": "10", "PrepTime": "5", "DatePublished": "5th Sep 2015", "Description": "desc",
         "Images": "['https://example.com/img1.jpg', 'https://example.com/img2.jpg']",
         "RecipeIngredientQuantities": "['1']", "RecipeIngredientParts": "['sugar']", "RecipeInstructions": "['Mix']",
         "RecipeServings": "2", "RecipeYield": "NA",
@@ -166,6 +167,26 @@ def test_images_parsing(tmp_path):
     recipe = reader.recipes[0]
     assert isinstance(recipe.images, list)
     assert recipe.images == ["https://example.com/img1.jpg", "https://example.com/img2.jpg"]
+
+
+def test_date_parsed_correctly(tmp_path):
+    row = {
+        "RecipeId": "3", "Name": "Z", "AuthorId": "2", "AuthorName": "B", "RecipeCategory": "D",
+        "CookTime": "1", "PrepTime": "2", "TotalTime": "3", "DatePublished": "9th Aug 2009", "Description": "",
+        "Images": "",
+        "RecipeIngredientQuantities": "['1']",
+        "RecipeIngredientParts": "['salt']",
+        "RecipeInstructions": "['Do']",
+        "Calories": "1", "FatContent": "0.1", "SaturatedFatContent": "0.0",
+        "CholesterolContent": "0", "SodiumContent": "0", "CarbohydrateContent": "0.0",
+        "FiberContent": "0.0", "SugarContent": "0.0", "ProteinContent": "0.0",
+        "RecipeServings": "1", "RecipeYield": "NA",
+    }
+
+    reader = build_csvreader_from_rows([row], tmp_path)
+    recipe = reader.recipes[0]
+    assert isinstance(recipe.date, datetime)
+    assert recipe.date == datetime(2009, 8, 9)
 
 
 # py -m pytest -v tests/unit/test_csv_reader.py
