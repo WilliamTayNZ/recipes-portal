@@ -156,9 +156,11 @@ def test_repository_links_recipe_with_author_and_category(in_memory_repo, recipe
     in_memory_repo.add_recipe(recipe_2)
 
     author = in_memory_repo.get_author(author_alice.id)
-    category = in_memory_repo.get_category(cat_drink.id)
+    category = in_memory_repo.get_category(cat_drink.name)
 
     assert recipe_2 in author.recipes
     assert recipe_2 in category.recipes
 
 # py -m pytest -v tests/unit/test_memory_repository.py
+
+# python -m pytest -v tests
