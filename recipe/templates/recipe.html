@@ -1,15 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ recipe.name }}</title>
-    <link rel="stylesheet" href="../static/css/recipe.css">
-</head>
-<body>
-
-    {% include 'navbar.html' %}
+{% extends "base.html" %}
+{% block title %}{{ recipe.name }}{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/recipe.css') }}">
 
     <main class="recipe-container">
+        <span id="close"></span>
         <!-- Recipe Header -->
         <div class="recipe-header">
             <h3 class="recipe-category">{{ recipe.category.name if recipe.category else "Uncategorized" }}</h3>
@@ -26,19 +21,24 @@
                 
                 <div class="main-image-container">
                     <div class="main-image">
-                        <img src="{{ recipe.images[0] if recipe.images else '../static/assets/usagi.png' }}" alt="{{ recipe.name }}" class="current-image" id="mainImage">
-                        <button class="nav-arrow left-arrow" onclick="previousImage()">&lt;</button>
-                        <button class="nav-arrow right-arrow" onclick="nextImage()">&gt;</button>
+                        {% set first_image = recipe.images[0] if recipe.images else url_for('static', filename='assets/usagi.png') %}
+                        <a href="#img-0">
+                            <img src="{{ first_image }}" alt="{{ recipe.name }}" class="current-image">
+                        </a>
                     </div>
                 </div>
 
                 <div class="thumbnail-container">
                     {% if recipe.images %}
                         {% for image in recipe.images %}
-                            <img src="{{ image }}" alt="{{ recipe.name }}" class="thumbnail" onclick="setMainImage('{{ image }}')">
+                            <a href="#img-{{ loop.index0 }}">
+                                <img src="{{ image }}" alt="{{ recipe.name }}" class="thumbnail">
+                            </a>
                         {% endfor %}
                     {% else %}
-                        <img src="../static/assets/usagi.png" alt="{{ recipe.name }}" class="thumbnail active">
+                        <a href="#img-0">
+                            <img src="{{ url_for('static', filename='assets/usagi.png') }}" alt="{{ recipe.name }}" class="thumbnail active">
+                        </a>
                     {% endif %}
                 </div>
             </div>
@@ -101,7 +101,7 @@
 
         <!-- Nutritional Information -->
         <div class="nutrition-section">
-            <h3 class="section-title">NUTRITIONAL INFORMATION (PER</h3>
+            <h3 class="section-title">NUTRITIONAL INFORMATION (PER SERVING)</h3>
             {% if recipe.nutrition %}
                 <div class="nutrition-grid">
                     <div class="nutrition-item">
@@ -157,70 +157,27 @@
         </div>
     </main>
 
-    <!-- Semi-fullscreen Image Modal -->
-    <div class="image-modal" id="imageModal" onclick="closeModal()">
-        <div class="modal-content">
-            <img src="" alt="" id="modalImage">
-            <button class="modal-nav-arrow left-arrow" onclick="previousImage()">&lt;</button>
-            <button class="modal-nav-arrow right-arrow" onclick="nextImage()">&gt;</button>
+    {% if recipe.images %}
+        {% for image in recipe.images %}
+            <div class="image-modal" id="img-{{ loop.index0 }}">
+                <a href="#close" class="modal-backdrop" aria-label="Close"></a>
+                <div class="modal-content">
+                    <img src="{{ image }}" alt="{{ recipe.name }}">
+                    {% if recipe.images|length > 1 %}
+                        {% set prev_idx = (loop.index0 - 1) % recipe.images|length %}
+                        {% set next_idx = (loop.index0 + 1) % recipe.images|length %}
+                        <a href="#img-{{ prev_idx }}" class="modal-nav-arrow left-arrow" aria-label="Previous">&lt;</a>
+                        <a href="#img-{{ next_idx }}" class="modal-nav-arrow right-arrow" aria-label="Next">&gt;</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="image-modal" id="img-0">
+            <a href="#close" class="modal-backdrop" aria-label="Close"></a>
+            <div class="modal-content">
+                <img src="{{ url_for('static', filename='assets/usagi.png') }}" alt="{{ recipe.name }}">
+            </div>
         </div>
-    </div>
-
-    <script type="text/javascript">
-        let currentImageIndex = 0;
-        let images = {{ recipe.images|tojson if recipe.images else [] }};
-        
-        function setMainImage(imageSrc) {
-            document.getElementById('mainImage').src = imageSrc;
-            currentImageIndex = images.indexOf(imageSrc);
-        }
-        
-        function nextImage() {
-            if (images.length > 0) {
-                currentImageIndex = (currentImageIndex + 1) % images.length;
-                const newImage = images[currentImageIndex];
-                document.getElementById('mainImage').src = newImage;
-                document.getElementById('modalImage').src = newImage;
-            }
-        }
-        
-        function previousImage() {
-            if (images.length > 0) {
-                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-                const newImage = images[currentImageIndex];
-                document.getElementById('mainImage').src = newImage;
-                document.getElementById('modalImage').src = newImage;
-            }
-        }
-        
-        function openModal() {
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
-            const mainImage = document.getElementById('mainImage');
-            
-            modalImage.src = mainImage.src;
-            modal.style.display = 'flex';
-        }
-        
-        function closeModal() {
-            document.getElementById('imageModal').style.display = 'none';
-        }
-        
-        // Make main image clickable to open modal
-        document.getElementById('mainImage').addEventListener('click', openModal);
-        
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (document.getElementById('imageModal').style.display === 'flex') {
-                if (e.key === 'ArrowLeft') {
-                    previousImage();
-                } else if (e.key === 'ArrowRight') {
-                    nextImage();
-                } else if (e.key === 'Escape') {
-                    closeModal();
-                }
-            }
-        });
-    </script>
-
-</body>
+    {% endif %}
+{% endblock %}
