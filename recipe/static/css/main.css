@@ -77,7 +77,9 @@ p {
     display: flex;
     gap: 35px;
     align-items: flex-start;
-    flex-wrap: wrap;
+    /*flex-wrap: wrap;*/
+    flex-direction: row;
+
 }
 
 .flex-box > div {
