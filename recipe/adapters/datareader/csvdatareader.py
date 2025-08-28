@@ -1,6 +1,9 @@
 import os
 import csv
 import ast
+import re
+
+from datetime import datetime
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
 from recipe.domainmodel.nutrition import Nutrition
@@ -12,6 +15,13 @@ class CSVDataReader:
         self.__recipes = []
         self.__authors = {}
         self.__categories = {}
+        
+
+    def parse_date(self, date_str: str) -> datetime:
+        # Remove common ordinal suffixes
+        clean_str = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date_str)
+        # Parse the cleaned string
+        return datetime.strptime(clean_str, "%d %b %Y")
 
     def csv_read(self):
         with open(self.__csv_path, mode='r', newline='', encoding='utf-8') as file:
@@ -61,6 +71,10 @@ class CSVDataReader:
                 # IMAGES
                 images = ast.literal_eval(row["Images"]) if row["Images"] else []
 
+                # DATE
+                date_string = row["DatePublished"]
+                created_date = self.parse_date(date_string)
+
                 #RECIPE
                 recipe = Recipe(
                     recipe_id=int(row["RecipeId"]),
@@ -76,7 +90,8 @@ class CSVDataReader:
                     nutrition=nutrition,
                     servings=row["RecipeServings"],
                     recipe_yield=recipe_yield,
-                    instructions=instructions
+                    instructions=instructions,
+                    created_date=created_date
                 )
 
                 #UPDATE RELATIONSHIPS
