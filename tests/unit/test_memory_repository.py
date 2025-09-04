@@ -11,6 +11,7 @@ from recipe.domainmodel.recipe import Recipe
 # ---------- Fixtures ----------
 @pytest.fixture
 def in_memory_repo():
+    data_path = Path(__file__).resolve().parent.parent / "data" / "recipes.csv"
     repo = MemoryRepository()
     populate(repo)
 
@@ -147,4 +148,4 @@ def test_repository_raises_for_missing_category_in_get_recipes_by_category(in_me
     with pytest.raises(RepositoryException):
         in_memory_repo.get_recipes_by_category(999999)
 
-# py -m pytest -v tests/unit/test_memory_repository.py
+# python -m pytest -v tests
