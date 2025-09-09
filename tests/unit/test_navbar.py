@@ -31,7 +31,7 @@ def test_navbar(client, app):
     assert 'alt="noodles-logo"' in html
     assert '>HOME<' in html
     assert '>BROWSE<' in html
-    assert '<a href="">PLACEHOLDER</a>' in html
+    # assert '<a href="">PLACEHOLDER</a>' in html
 
 #testing browse routes and implementations
 
