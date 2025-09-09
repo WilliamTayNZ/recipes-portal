@@ -21,24 +21,38 @@ def browse():
 
     end = cursor + recipes_per_page
 
+    filter_by = request.args.get('filter_by')
+    query = request.args.get('query', '').strip()
 
-    recipes = services.get_recipes_by_name("", repo.repo_instance)
+    try:
+        if filter_by and query:
+            recipes = services.search_recipes(filter_by, query, repo.repo_instance)
+        else:
+            recipes = services.get_recipes_by_name("", repo.repo_instance)
+    except services.NonExistentRecipeException:
+        recipes = []
     page_recipes = recipes[cursor:end]
     first_recipe_url = None
     last_recipe_url = None
     next_recipe_url = None
     prev_recipe_url = None
 
+    # Preserve search params in pagination links
+    extra_params = ""
+    if filter_by and query:
+        extra_params = f"&filter_by={filter_by}&query={query}"
+
     if cursor > 0:
         prev_start = max(0, cursor - recipes_per_page)
-        prev_recipe_url = f"/browse?cursor={prev_start}"
-        first_recipe_url = "/browse?cursor=0"
+        prev_recipe_url = f"/browse?cursor={prev_start}{extra_params}"
+        first_recipe_url = f"/browse?cursor=0{extra_params}"
 
     if end < len(recipes):
-        last_recipe_url = f"/browse?cursor={((len(recipes) - 1) // recipes_per_page) * recipes_per_page}"
-        next_recipe_url = f"/browse?cursor={end}"
+        last_cursor = ((len(recipes) - 1) // recipes_per_page) * recipes_per_page
+        last_recipe_url = f"/browse?cursor={last_cursor}{extra_params}"
+        next_recipe_url = f"/browse?cursor={end}{extra_params}"
 
-    return render_template('browse.html', recipes=page_recipes, first_recipe_url=first_recipe_url, last_recipe_url=last_recipe_url, next_recipe_url=next_recipe_url, prev_recipe_url=prev_recipe_url)
+    return render_template('browse.html', recipes=page_recipes, first_recipe_url=first_recipe_url, last_recipe_url=last_recipe_url, next_recipe_url=next_recipe_url, prev_recipe_url=prev_recipe_url, filter_by=filter_by, query=query)
 
 
 
