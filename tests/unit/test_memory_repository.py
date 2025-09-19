@@ -2,21 +2,12 @@ import pytest
 from pathlib import Path
 
 from recipe.adapters.repository import RepositoryException
-from recipe.adapters.memory_repository import MemoryRepository, populate
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
 from recipe.domainmodel.recipe import Recipe
 
 
 # ---------- Fixtures ----------
-@pytest.fixture
-def in_memory_repo():
-    data_path = Path(__file__).resolve().parent.parent / "data" / "recipes.csv"
-    repo = MemoryRepository()
-    populate(repo)
-
-    return repo
-
 @pytest.fixture
 def author_alice() -> Author:
     return Author(author_id=1, name="Alice")
