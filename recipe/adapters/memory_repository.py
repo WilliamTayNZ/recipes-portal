@@ -123,10 +123,8 @@ class MemoryRepository(AbstractRepository):
         return [r for r in self.__recipes if getattr(getattr(r, "category", None), "id", None) == category_id]
         #return [r for r in self.__recipes if getattr(getattr(r, "category", None), "category_name", None) == category_name]
 
-def populate(repo: AbstractRepository):
-    adapters_dir = Path(__file__).resolve().parent
-    csv_path = adapters_dir / "data" / "recipes.csv"
-
+def populate(data_path: Path, repo: AbstractRepository):
+    csv_path = data_path / "recipes.csv"
     print(f"[populate] csv_path = {csv_path}")
     print(f"[populate] exists?  {csv_path.exists()}")
 
