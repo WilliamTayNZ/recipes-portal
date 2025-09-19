@@ -3,6 +3,19 @@
 {% block content %}
     <div class="heading-cont">
         <h2>BROWSE RECIPES!</h2>
+
+        <form method="GET" action="{{ url_for('browse_bp.browse') }}" class="search-bar">
+            <select name="filter_by">
+                <option value="name" {% if filter_by == 'name' %}selected{% endif %}>Recipe Name</option>
+                <option value="category" {% if filter_by == 'category' %}selected{% endif %}>Category</option>
+                <option value="author" {% if filter_by == 'author' %}selected{% endif %}>Author</option>
+                <option value="ingredient" {% if filter_by == 'ingredient' %}selected{% endif %}>Ingredient</option>
+            </select>
+
+            <input type="text" name="query" placeholder="Search recipes..." value="{{ query or '' }}" required />
+
+            <button type="submit">Search</button>
+        </form>
     </div>
 
     <div class="recipes-cont">
