@@ -51,3 +51,4 @@ def test_index(client):
     assert b'The COVID Pandemic of 2020' in response.data
 '''
 
+# Make tests for each page

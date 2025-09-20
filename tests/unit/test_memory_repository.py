@@ -17,21 +17,21 @@ def author_bob() -> Author:
     return Author(author_id=2, name="Bob")
 
 @pytest.fixture
-def cat_dessert() -> Category:
-    return Category(name="Dessert", recipes=[], category_id=1)
+def cat_confectionary() -> Category:
+    return Category(name="Confectionary", recipes=[], category_id=1)
 
 @pytest.fixture
 def cat_drink() -> Category:
     return Category(name="Drink", recipes=[], category_id=2)
 
 @pytest.fixture
-def recipe_1(author_alice, cat_dessert) -> Recipe:
+def recipe_1(author_alice, cat_confectionary) -> Recipe:
     return Recipe(
         recipe_id=101,
         name="Brownies",
         author=author_alice,
         description="Rich and fudgy.",
-        category=cat_dessert,
+        category=cat_confectionary,
         ingredients=["flour", "cocoa", "butter", "sugar"],
         instructions=["Mix", "Bake"],
     )
@@ -49,13 +49,13 @@ def recipe_2(author_alice, cat_drink) -> Recipe:
     )
 
 @pytest.fixture
-def recipe_3(author_bob, cat_dessert) -> Recipe:
+def recipe_3(author_bob, cat_confectionary) -> Recipe:
     return Recipe(
         recipe_id=103,
         name="Cheesecake",
         author=author_bob,
         description="Creamy classic.",
-        category=cat_dessert,
+        category=cat_confectionary,
         ingredients=["cream cheese", "eggs", "sugar"],
         instructions=["Beat", "Bake"],
     )
@@ -114,28 +114,28 @@ def test_repository_raises_for_missing_author_in_get_recipes_by_author_id(in_mem
 
 # Category tests
 
-def test_repository_can_add_category_and_get_by_name(in_memory_repo, cat_dessert):
-    in_memory_repo.add_category(cat_dessert)
-    assert in_memory_repo.get_category_by_name("Dessert") is cat_dessert
+def test_repository_can_add_category_and_get_by_name(in_memory_repo, cat_confectionary):
+    in_memory_repo.add_category(cat_confectionary)
+    assert in_memory_repo.get_category_by_name("Confectionary") is cat_confectionary
 
 def test_repository_rejects_non_category_on_add(in_memory_repo):
     with pytest.raises(TypeError):
         in_memory_repo.add_category("Agile Methodologies")
 
-def test_repository_raises_for_duplicate_category_name(in_memory_repo, cat_dessert):
-    in_memory_repo.add_category(cat_dessert)
+def test_repository_raises_for_duplicate_category_name(in_memory_repo, cat_confectionary):
+    in_memory_repo.add_category(cat_confectionary)
     with pytest.raises(RepositoryException):
-        in_memory_repo.add_category(cat_dessert)
+        in_memory_repo.add_category(cat_confectionary)
 
 def test_repository_raises_for_missing_category_name(in_memory_repo):
     with pytest.raises(RepositoryException):
         in_memory_repo.get_category_by_name("404")
 
-def test_repository_can_get_recipes_by_category_name(in_memory_repo, recipe_1, recipe_3, cat_dessert):
-    in_memory_repo.add_category(cat_dessert)
+def test_repository_can_get_recipes_by_category_name(in_memory_repo, recipe_1, recipe_3, cat_confectionary):
+    in_memory_repo.add_category(cat_confectionary)
     in_memory_repo.add_recipe(recipe_1)
     in_memory_repo.add_recipe(recipe_3)
-    recipes = in_memory_repo.get_recipes_by_category_name(cat_dessert.name)
+    recipes = in_memory_repo.get_recipes_by_category_name(cat_confectionary.name)
     names = sorted(r.name for r in recipes)
     assert names == ["Brownies", "Cheesecake"]
 

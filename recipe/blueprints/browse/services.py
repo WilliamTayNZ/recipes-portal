@@ -7,7 +7,7 @@ class UnknownUserException(Exception):
     pass
 
 def get_recipe(recipe_id: int, repo: AbstractRepository):
-    recipe = repo.get_recipe(recipe_id)
+    recipe = repo.get_recipe_by_id(recipe_id)
     if recipe is None:
         raise NonExistentRecipeException(f"Recipe with id {recipe_id} does not exist.")
     return recipe
