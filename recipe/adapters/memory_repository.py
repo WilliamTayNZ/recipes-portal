@@ -21,6 +21,9 @@ class MemoryRepository(AbstractRepository):
 
         self.__authors_by_id = dict()  # id -> Author
 
+    
+    # User functions
+   
     def add_user(self, user: User):
         self.__users[user.username] = user
 
@@ -29,6 +32,8 @@ class MemoryRepository(AbstractRepository):
             return None
         return self.__users[username]
 
+    
+    # Recipe functions
 
     def add_recipe(self, recipe: Recipe):
         if not isinstance(recipe, Recipe):
@@ -42,8 +47,12 @@ class MemoryRepository(AbstractRepository):
             #return  # ignore duplicates
         self.__recipes_index[recipe_id] = recipe
         self.__recipes.append(recipe)
+        
+        # Update Category and Author objects' recipes list
+        recipe.category.add_recipe(recipe)
+        recipe.author.add_recipe(recipe) 
 
-    def get_recipe(self, recipe_id: int):
+    def get_recipe_by_id(self, recipe_id: int):
         return self.__recipes_index.get(recipe_id)
 
     def get_recipes(self) -> List[Recipe]:
@@ -70,40 +79,48 @@ class MemoryRepository(AbstractRepository):
     def get_recipes_by_id(self, id_list: List[int]) -> List[Recipe]:
         return [self.__recipes_index[i] for i in id_list if i in self.__recipes_index]
 
+
+    # Author functions
     def add_author(self, author: Author):
         if not isinstance(author, Author):
             raise TypeError("Expected an Author instance")
+
         name = getattr(author, "name", None)
         if name is None:
             raise RepositoryException("Author has no author_name")
         if name in self.__authors:
-            return
-        if author.id in self.__authors:
-            raise RepositoryException(f"Author with id: {author.id} already exists")
-        self.__authors[author.id] = author
+            raise RepositoryException(f"Author with name: {author.name} already exists")
+        
+        author_id = getattr(author, "id", None)
+        if author_id is None:
+            raise RepositoryException("Author has no id")
+        if author_id in self.__authors_by_id:
+            raise RepositoryException(f"Author with id: {author_id} already exists")
 
-    def get_author(self, author_id: int) -> Author:
-        if author_id in self.__authors:
-            return self.__authors[author_id]
-        if author_id not in self.__authors:
+        self.__authors[author.name] = author
+        self.__authors_by_id[author.id] = author
+
+    def get_author_by_name(self, name: str) -> Author:
+        if name not in self.__authors:
+            raise RepositoryException(f"Author with name: {name} does not exist")
+        return self.__authors[name]
+
+    def get_author_by_id(self, author_id: int) -> Author:
+        if author_id not in self.__authors_by_id:
             raise RepositoryException(f"Author with id: {author_id} does not exist")
-        return self.__authors.get(author_id)
-
-    #def get_author(self, author_name: str):
-        #if author_name not in self.__authors:
-            #raise RepositoryException(f"Author with name: {author_name} does not exist")
-        #return self.__authors.get(author_name)
-
+        return self.__authors_by_id[author_id]
 
     def get_recipes_by_author_id(self, author_id: int) -> List[Recipe]:
-        if author_id not in self.__authors:
+        if author_id not in self.__authors_by_id:
             raise RepositoryException(f"Author with id: {author_id} does not exist")
         return [r for r in self.__recipes if getattr(getattr(r, "author", None), "id", None) == author_id]
 
-    def get_recipes_by_author(self, author_name: str) -> List[Recipe]:
+    def get_recipes_by_author_name(self, author_name: str) -> List[Recipe]:
         #return [r for r in self.__recipes if getattr(getattr(r, "author", None), "author_name", None) == author_name]
         return [r for r in self.__recipes if getattr(getattr(r, "author", None), "name", None) == author_name]
 
+
+    # Category functions
     def add_category(self, category: Category):
         if not isinstance(category, Category):
             raise TypeError("Expected a Category instance")
@@ -122,12 +139,12 @@ class MemoryRepository(AbstractRepository):
             raise RepositoryException(f"Category with name: {name} already exists")
         self.__categories[category.name] = category
 
-    def get_category(self, category_name: str):
+    def get_category_by_name(self, category_name: str):
         if category_name not in self.__categories:
             raise RepositoryException(f"Category with name: {category_name} does not exist")
         return self.__categories.get(category_name)
 
-    def get_recipes_by_category(self, category_name: str) -> List[Recipe]:
+    def get_recipes_by_category_name(self, category_name: str) -> List[Recipe]:
         if not isinstance(category_name, str):
             raise TypeError("category_name must be a str")
         if category_name not in self.__categories:
