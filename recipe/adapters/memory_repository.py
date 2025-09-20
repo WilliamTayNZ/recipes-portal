@@ -5,6 +5,10 @@ from recipe.adapters.repository import AbstractRepository, RepositoryException
 from recipe.domainmodel.recipe import Recipe
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
+from recipe.domainmodel.user import User
+
+import csv # to read users.csv, for recipes.csv we use the CSVDataReader class
+from werkzeug.security import generate_password_hash
 
 class MemoryRepository(AbstractRepository):
 
@@ -13,9 +17,18 @@ class MemoryRepository(AbstractRepository):
         self.__recipes_index = dict()  # id -> Recipe
         self.__authors = dict()  # name -> Author
         self.__categories = dict()  # name -> Category
+        self.__users = dict() # username -> User
 
         self.__categories_by_id = dict()  # id -> Category
         self.__authors_by_id = dict()  # id -> Author
+
+    def add_user(self, user: User):
+        self.__users[user.username] = user
+
+    def get_user(self, username) -> User:
+        if username not in self.__users:
+            return None
+        return self.__users[username]
 
 
     def add_recipe(self, recipe: Recipe):
@@ -123,6 +136,46 @@ class MemoryRepository(AbstractRepository):
         return [r for r in self.__recipes if getattr(getattr(r, "category", None), "id", None) == category_id]
         #return [r for r in self.__recipes if getattr(getattr(r, "category", None), "category_name", None) == category_name]
 
+def read_general_csv_file(filename: str): # Used for any csv file that is NOT recipes.csv, which is read with CSVDataReader
+    with open(filename, encoding='utf-8-sig') as infile:
+        reader = csv.reader(infile)
+
+        # Read first line of the the CSV file.
+        headers = next(reader)
+
+        # Read remaining rows from the CSV file.
+        for row in reader:
+            # Strip any leading/trailing white space from data read.
+            row = [item.strip() for item in row]
+            yield row
+
+def load_users(data_path: Path, repo: MemoryRepository):
+    users = dict()
+
+    users_filename = str(Path(data_path) / "users.csv")
+
+    with open(users_filename, encoding='utf-8-sig') as infile:
+        reader = csv.reader(infile)
+
+        # Read first line of the the CSV file.
+        headers = next(reader)
+
+        # Read remaining rows from the CSV file.
+        for row in reader:
+            # Strip any leading/trailing white space from data read.
+            row = [item.strip() for item in row]
+            yield row
+
+    for data_row in read_general_csv_file(users_filename):
+        user = User(
+            username=data_row[1],
+            password=generate_password_hash(data_row[2])
+        )
+        repo.add_user(user)
+        users[data_row[0]] = user
+    return users
+
+
 def populate(data_path: Path, repo: AbstractRepository):
     csv_path = data_path / "recipes.csv"
     print(f"[populate] csv_path = {csv_path}")
@@ -157,9 +210,20 @@ def populate(data_path: Path, repo: AbstractRepository):
             except Exception:
                 pass
 
+        users = load_users(data_path, repo)
+
+        for user in users:
+            try:
+                repo.add_user(user)
+            except Exception:
+                pass
+
         print(f"[populate] loaded {repo.get_number_of_recipe()} recipes, "
               f"{len(getattr(repo, '_MemoryRepository__authors', {}))} authors, "
-              f"{len(getattr(repo, '_MemoryRepository__categories', {}))} categories")
+              f"{len(getattr(repo, '_MemoryRepository__categories', {}))} categories,"
+              f"{len(getattr(repo, '_MemoryRepository__users', {}))} users",
+              )
+
 
     except FileNotFoundError as e:
         raise RepositoryException(f"File not found: {e}") from e

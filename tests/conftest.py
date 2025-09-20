@@ -1,3 +1,5 @@
+# For fixtures shared by multiple test files, pytest automatically loads themm
+
 import pytest
 
 from recipe import create_app
@@ -5,14 +7,17 @@ from recipe.adapters.memory_repository import MemoryRepository, populate
 
 from utils import get_project_root
 
-# for now using the actual data path and not the test path
-DATA_PATH = get_project_root() / "recipe" / "adapters" / "data"
+# For now, the data in the actual data path and the test data path are the exact same.
+# We felt it made sense to develop while testing against the full datasets, so we could be sure our code worked 
+# on the actual dataset.
+
+# DATA_PATH = get_project_root() / "recipe" / "adapters" / "data"
 TEST_DATA_PATH = get_project_root() / "tests" / "data"
 
 @pytest.fixture
 def in_memory_repo():
     repo = MemoryRepository()
-    populate(DATA_PATH, repo)
+    populate(TEST_DATA_PATH, repo)
 
     return repo
 

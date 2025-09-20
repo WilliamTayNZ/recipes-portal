@@ -140,3 +140,4 @@ def test_repository_raises_for_missing_category_in_get_recipes_by_category(in_me
         in_memory_repo.get_recipes_by_category(999999)
 
 # python -m pytest -v tests
+# py -m pytest -v tests/unit/test_memory_repository.py
