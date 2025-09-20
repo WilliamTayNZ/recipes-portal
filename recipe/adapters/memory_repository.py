@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Iterable
+from typing import Dict, List, Iterable
 from recipe.adapters.datareader.csvdatareader import CSVDataReader
 from recipe.adapters.repository import AbstractRepository, RepositoryException
 from recipe.domainmodel.recipe import Recipe
@@ -16,10 +16,9 @@ class MemoryRepository(AbstractRepository):
         self.__recipes: List[Recipe] = []
         self.__recipes_index = dict()  # id -> Recipe
         self.__authors = dict()  # name -> Author
-        self.__categories = dict()  # name -> Category
+        self.__categories = dict() # name -> Category
         self.__users = dict() # username -> User
 
-        self.__categories_by_id = dict()  # id -> Category
         self.__authors_by_id = dict()  # id -> Author
 
     def add_user(self, user: User):
@@ -108,33 +107,32 @@ class MemoryRepository(AbstractRepository):
     def add_category(self, category: Category):
         if not isinstance(category, Category):
             raise TypeError("Expected a Category instance")
-        if getattr(category, "id", None) is None:
-            raise RepositoryException("Category has no id")
+        #if getattr(category, "id", None) is None:
+        #    raise RepositoryException("Category has no id")
         if not getattr(category, "name", None):
             raise RepositoryException("Category has no name")
 
-        if category.id in self.__categories:
-            raise RepositoryException(f"Category with id: {category.id} already exists")
+        if category.name in self.__categories:
+            raise RepositoryException(f"Category with name: {category.name} already exists")
 
         #name = getattr(category, "name", None)
         #if name is None:
             raise RepositoryException("Category has no category_name")
         #if name in self.__categories:
             raise RepositoryException(f"Category with name: {name} already exists")
-        self.__categories[category.id] = category
+        self.__categories[category.name] = category
 
-    def get_category(self, category_id: int):
-        if category_id not in self.__categories:
-            raise RepositoryException(f"Category with id: {category_id} does not exist")
-        return self.__categories.get(category_id)
+    def get_category(self, category_name: str):
+        if category_name not in self.__categories:
+            raise RepositoryException(f"Category with name: {category_name} does not exist")
+        return self.__categories.get(category_name)
 
-    def get_recipes_by_category(self, category_id: str) -> List[Recipe]:
-        if not isinstance(category_id, int):
-            raise TypeError("category_id must be an int")
-        if category_id not in self.__categories:
-            raise RepositoryException(f"Category with id: {category_id} does not exist")
-        return [r for r in self.__recipes if getattr(getattr(r, "category", None), "id", None) == category_id]
-        #return [r for r in self.__recipes if getattr(getattr(r, "category", None), "category_name", None) == category_name]
+    def get_recipes_by_category(self, category_name: str) -> List[Recipe]:
+        if not isinstance(category_name, str):
+            raise TypeError("category_name must be a str")
+        if category_name not in self.__categories:
+            raise RepositoryException(f"Category with name: {category_name} does not exist")
+        return [r for r in self.__recipes if getattr(getattr(r, "category", None), "name", None) == category_name]
 
 def read_general_csv_file(filename: str): # Used for any csv file that is NOT recipes.csv, which is read with CSVDataReader
     with open(filename, encoding='utf-8-sig') as infile:

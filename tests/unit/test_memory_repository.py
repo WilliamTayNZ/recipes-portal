@@ -18,11 +18,11 @@ def author_bob() -> Author:
 
 @pytest.fixture
 def cat_dessert() -> Category:
-    return Category(name="Dessert", category_id=10)
+    return Category(name="Dessert", recipes=[], category_id=1)
 
 @pytest.fixture
 def cat_drink() -> Category:
-    return Category(name="Drink", category_id=11)
+    return Category(name="Drink", recipes=[], category_id=2)
 
 @pytest.fixture
 def recipe_1(author_alice, cat_dessert) -> Recipe:
@@ -110,34 +110,34 @@ def test_repository_raises_for_missing_author_in_get_recipes_by_author_id(in_mem
 
 # Category tests
 
-def test_repository_can_add_category_and_get_by_id(in_memory_repo, cat_dessert):
+def test_repository_can_add_category_and_get_by_name(in_memory_repo, cat_dessert):
     in_memory_repo.add_category(cat_dessert)
-    assert in_memory_repo.get_category(10) is cat_dessert
+    assert in_memory_repo.get_category("Dessert") is cat_dessert
 
 def test_repository_rejects_non_category_on_add(in_memory_repo):
     with pytest.raises(TypeError):
         in_memory_repo.add_category("Agile Methodologies")
 
-def test_repository_raises_for_duplicate_category_id(in_memory_repo, cat_dessert):
+def test_repository_raises_for_duplicate_category_name(in_memory_repo, cat_dessert):
     in_memory_repo.add_category(cat_dessert)
     with pytest.raises(RepositoryException):
         in_memory_repo.add_category(cat_dessert)
 
-def test_repository_raises_for_missing_category_id(in_memory_repo):
+def test_repository_raises_for_missing_category_name(in_memory_repo):
     with pytest.raises(RepositoryException):
-        in_memory_repo.get_category(404)
+        in_memory_repo.get_category("404")
 
 def test_repository_can_get_recipes_by_category(in_memory_repo, recipe_1, recipe_3, cat_dessert):
     in_memory_repo.add_category(cat_dessert)
     in_memory_repo.add_recipe(recipe_1)
     in_memory_repo.add_recipe(recipe_3)
-    recipes = in_memory_repo.get_recipes_by_category(cat_dessert.id)
+    recipes = in_memory_repo.get_recipes_by_category(cat_dessert.name)
     names = sorted(r.name for r in recipes)
     assert names == ["Brownies", "Cheesecake"]
 
 def test_repository_raises_for_missing_category_in_get_recipes_by_category(in_memory_repo):
     with pytest.raises(RepositoryException):
-        in_memory_repo.get_recipes_by_category(999999)
+        in_memory_repo.get_recipes_by_category("Iron II")
 
 # python -m pytest -v tests
 # py -m pytest -v tests/unit/test_memory_repository.py

@@ -7,10 +7,6 @@ from recipe.adapters.memory_repository import MemoryRepository, populate
 
 from utils import get_project_root
 
-# For now, the data in the actual data path and the test data path are the exact same.
-# We felt it made sense to develop while testing against the full datasets, so we could be sure our code worked 
-# on the actual dataset.
-
 # DATA_PATH = get_project_root() / "recipe" / "adapters" / "data"
 TEST_DATA_PATH = get_project_root() / "tests" / "data"
 
