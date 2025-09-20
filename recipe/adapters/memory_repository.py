@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Iterable
+from typing import List, Iterable
 from recipe.adapters.datareader.csvdatareader import CSVDataReader
 from recipe.adapters.repository import AbstractRepository, RepositoryException
 from recipe.domainmodel.recipe import Recipe
