@@ -1,7 +1,6 @@
 blinker==1.9.0
 click==8.2.1
 colorama==0.4.6
-dotenv==0.9.9
 Flask==3.0.3
 Flask-WTF==1.2.2
 iniconfig==2.1.0
