@@ -5,6 +5,10 @@ from recipe.adapters.repository import AbstractRepository, RepositoryException
 from recipe.domainmodel.recipe import Recipe
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
+from recipe.domainmodel.user import User
+
+import csv # to read users.csv, for recipes.csv we use the CSVDataReader class
+from werkzeug.security import generate_password_hash
 
 class MemoryRepository(AbstractRepository):
 
@@ -12,11 +16,24 @@ class MemoryRepository(AbstractRepository):
         self.__recipes: List[Recipe] = []
         self.__recipes_index = dict()  # id -> Recipe
         self.__authors = dict()  # name -> Author
-        self.__categories = dict()  # name -> Category
+        self.__categories = dict() # name -> Category
+        self.__users = dict() # username -> User
 
-        self.__categories_by_id = dict()  # id -> Category
         self.__authors_by_id = dict()  # id -> Author
 
+    
+    # User functions
+   
+    def add_user(self, user: User):
+        self.__users[user.username] = user
+
+    def get_user(self, username) -> User:
+        if username not in self.__users:
+            return None
+        return self.__users[username]
+
+    
+    # Recipe functions
 
     def add_recipe(self, recipe: Recipe):
         if not isinstance(recipe, Recipe):
@@ -30,8 +47,12 @@ class MemoryRepository(AbstractRepository):
             #return  # ignore duplicates
         self.__recipes_index[recipe_id] = recipe
         self.__recipes.append(recipe)
+        
+        # Update Category and Author objects' recipes list
+        recipe.category.add_recipe(recipe)
+        recipe.author.add_recipe(recipe) 
 
-    def get_recipe(self, recipe_id: int):
+    def get_recipe_by_id(self, recipe_id: int):
         return self.__recipes_index.get(recipe_id)
 
     def get_recipes(self) -> List[Recipe]:
@@ -58,70 +79,117 @@ class MemoryRepository(AbstractRepository):
     def get_recipes_by_id(self, id_list: List[int]) -> List[Recipe]:
         return [self.__recipes_index[i] for i in id_list if i in self.__recipes_index]
 
+
+    # Author functions
     def add_author(self, author: Author):
         if not isinstance(author, Author):
             raise TypeError("Expected an Author instance")
+
         name = getattr(author, "name", None)
         if name is None:
             raise RepositoryException("Author has no author_name")
         if name in self.__authors:
-            return
-        if author.id in self.__authors:
-            raise RepositoryException(f"Author with id: {author.id} already exists")
-        self.__authors[author.id] = author
+            raise RepositoryException(f"Author with name: {author.name} already exists")
+        
+        author_id = getattr(author, "id", None)
+        if author_id is None:
+            raise RepositoryException("Author has no id")
+        if author_id in self.__authors_by_id:
+            raise RepositoryException(f"Author with id: {author_id} already exists")
 
-    def get_author(self, author_id: int) -> Author:
-        if author_id in self.__authors:
-            return self.__authors[author_id]
-        if author_id not in self.__authors:
+        self.__authors[author.name] = author
+        self.__authors_by_id[author.id] = author
+
+    def get_author_by_name(self, name: str) -> Author:
+        if name not in self.__authors:
+            raise RepositoryException(f"Author with name: {name} does not exist")
+        return self.__authors[name]
+
+    def get_author_by_id(self, author_id: int) -> Author:
+        if author_id not in self.__authors_by_id:
             raise RepositoryException(f"Author with id: {author_id} does not exist")
-        return self.__authors.get(author_id)
-
-    #def get_author(self, author_name: str):
-        #if author_name not in self.__authors:
-            #raise RepositoryException(f"Author with name: {author_name} does not exist")
-        #return self.__authors.get(author_name)
-
+        return self.__authors_by_id[author_id]
 
     def get_recipes_by_author_id(self, author_id: int) -> List[Recipe]:
-        if author_id not in self.__authors:
+        if author_id not in self.__authors_by_id:
             raise RepositoryException(f"Author with id: {author_id} does not exist")
         return [r for r in self.__recipes if getattr(getattr(r, "author", None), "id", None) == author_id]
 
-    def get_recipes_by_author(self, author_name: str) -> List[Recipe]:
+    def get_recipes_by_author_name(self, author_name: str) -> List[Recipe]:
         #return [r for r in self.__recipes if getattr(getattr(r, "author", None), "author_name", None) == author_name]
         return [r for r in self.__recipes if getattr(getattr(r, "author", None), "name", None) == author_name]
 
+
+    # Category functions
     def add_category(self, category: Category):
         if not isinstance(category, Category):
             raise TypeError("Expected a Category instance")
-        if getattr(category, "id", None) is None:
-            raise RepositoryException("Category has no id")
+        #if getattr(category, "id", None) is None:
+        #    raise RepositoryException("Category has no id")
         if not getattr(category, "name", None):
             raise RepositoryException("Category has no name")
 
-        if category.id in self.__categories:
-            raise RepositoryException(f"Category with id: {category.id} already exists")
+        if category.name in self.__categories:
+            raise RepositoryException(f"Category with name: {category.name} already exists")
 
         #name = getattr(category, "name", None)
         #if name is None:
             raise RepositoryException("Category has no category_name")
         #if name in self.__categories:
             raise RepositoryException(f"Category with name: {name} already exists")
-        self.__categories[category.id] = category
+        self.__categories[category.name] = category
 
-    def get_category(self, category_id: int):
-        if category_id not in self.__categories:
-            raise RepositoryException(f"Category with id: {category_id} does not exist")
-        return self.__categories.get(category_id)
+    def get_category_by_name(self, category_name: str):
+        if category_name not in self.__categories:
+            raise RepositoryException(f"Category with name: {category_name} does not exist")
+        return self.__categories.get(category_name)
 
-    def get_recipes_by_category(self, category_id: str) -> List[Recipe]:
-        if not isinstance(category_id, int):
-            raise TypeError("category_id must be an int")
-        if category_id not in self.__categories:
-            raise RepositoryException(f"Category with id: {category_id} does not exist")
-        return [r for r in self.__recipes if getattr(getattr(r, "category", None), "id", None) == category_id]
-        #return [r for r in self.__recipes if getattr(getattr(r, "category", None), "category_name", None) == category_name]
+    def get_recipes_by_category_name(self, category_name: str) -> List[Recipe]:
+        if not isinstance(category_name, str):
+            raise TypeError("category_name must be a str")
+        if category_name not in self.__categories:
+            raise RepositoryException(f"Category with name: {category_name} does not exist")
+        return [r for r in self.__recipes if getattr(getattr(r, "category", None), "name", None) == category_name]
+
+def read_general_csv_file(filename: str): # Used for any csv file that is NOT recipes.csv, which is read with CSVDataReader
+    with open(filename, encoding='utf-8-sig') as infile:
+        reader = csv.reader(infile)
+
+        # Read first line of the the CSV file.
+        headers = next(reader)
+
+        # Read remaining rows from the CSV file.
+        for row in reader:
+            # Strip any leading/trailing white space from data read.
+            row = [item.strip() for item in row]
+            yield row
+
+def load_users(data_path: Path, repo: MemoryRepository):
+    users = dict()
+
+    users_filename = str(Path(data_path) / "users.csv")
+
+    with open(users_filename, encoding='utf-8-sig') as infile:
+        reader = csv.reader(infile)
+
+        # Read first line of the the CSV file.
+        headers = next(reader)
+
+        # Read remaining rows from the CSV file.
+        for row in reader:
+            # Strip any leading/trailing white space from data read.
+            row = [item.strip() for item in row]
+            yield row
+
+    for data_row in read_general_csv_file(users_filename):
+        user = User(
+            username=data_row[1],
+            password=generate_password_hash(data_row[2])
+        )
+        repo.add_user(user)
+        users[data_row[0]] = user
+    return users
+
 
 def populate(data_path: Path, repo: AbstractRepository):
     csv_path = data_path / "recipes.csv"
@@ -157,9 +225,20 @@ def populate(data_path: Path, repo: AbstractRepository):
             except Exception:
                 pass
 
+        users = load_users(data_path, repo)
+
+        for user in users:
+            try:
+                repo.add_user(user)
+            except Exception:
+                pass
+
         print(f"[populate] loaded {repo.get_number_of_recipe()} recipes, "
               f"{len(getattr(repo, '_MemoryRepository__authors', {}))} authors, "
-              f"{len(getattr(repo, '_MemoryRepository__categories', {}))} categories")
+              f"{len(getattr(repo, '_MemoryRepository__categories', {}))} categories,"
+              f"{len(getattr(repo, '_MemoryRepository__users', {}))} users",
+              )
+
 
     except FileNotFoundError as e:
         raise RepositoryException(f"File not found: {e}") from e

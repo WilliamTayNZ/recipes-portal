@@ -33,4 +33,7 @@ def create_app(test_config=None):
         from .blueprints.browse.browse import recipes_blueprint
         app.register_blueprint(recipes_blueprint)
 
+        from .blueprints.authentication.authentication import authentication_blueprint
+        app.register_blueprint(authentication_blueprint)
+
     return app

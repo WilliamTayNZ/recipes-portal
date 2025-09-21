@@ -26,6 +26,7 @@ class CSVDataReader:
     def csv_read(self):
         with open(self.__csv_path, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
+
             for row in reader:
                 #CREATION OF AUTHOR
                 author_id = int(row["AuthorId"])

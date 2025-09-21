@@ -22,7 +22,7 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_recipe(self) -> List[Recipe]:
+    def get_recipe_by_id(self) -> List[Recipe]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -50,11 +50,11 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_author(self, author_name: str):
+    def get_author_by_name(self, author_name: str):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_recipes_by_author(self, author_name: str) -> List[Recipe]:
+    def get_recipes_by_author_name(self, author_name: str) -> List[Recipe]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -62,11 +62,11 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_category(self, category_name: str):
+    def get_category_by_name(self, category_name: str):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_recipes_by_category(self, category_name: str) -> List[Recipe]:
+    def get_recipes_by_category_name(self, category_name: str) -> List[Recipe]:
         raise NotImplementedError
 
     @abc.abstractmethod
