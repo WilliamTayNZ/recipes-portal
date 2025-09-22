@@ -402,3 +402,40 @@ nav img {
 .modal-nav-arrow.right-arrow {
     right: -70px;
 }
+
+/* health star rating */
+
+.health-star {
+    margin-top: 20px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    margin-bottom: 50px;
+}
+
+.health-star-label {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.health-star-display {
+    margin: 5px 0;
+}
+
+.star {
+    font-size: 2rem; 
+    color: gold;
+    margin: 0 2px;
+}
+
+.star.empty {
+    color: #ccc; 
+}
+
+.star.half {
+    color: linear-gradient(90deg, gold 50%, #ccc 50%); 
+}
+
+.health-star-score {
+    font-size: 1rem;
+    color: #555;
+}
