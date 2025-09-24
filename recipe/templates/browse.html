@@ -2,9 +2,11 @@
 {% block title %}Browse{% endblock %}
 {% block content %}
     <div class="heading-cont">
-        <h2>BROWSE RECIPES!</h2>
+        <h2>{{ "MY FAVOURITES" if mode == "favourites" else "BROWSE RECIPES!" }}</h2>
 
-        <form method="GET" action="{{ url_for('browse_bp.browse') }}" class="search-bar">
+        <form method="GET"
+              action="{{ url_for('browse_bp.favourites') if mode == 'favourites' else url_for('browse_bp.browse') }}"
+              class="search-bar">
             <select name="filter_by">
                 <option value="name" {% if filter_by == 'name' %}selected{% endif %}>Recipe Name</option>
                 <option value="category" {% if filter_by == 'category' %}selected{% endif %}>Category</option>
@@ -20,12 +22,14 @@
 
     <div class="recipes-cont">
         {% for recipe in recipes %}
-                <div class="browse-card" onclick="location.href='/recipe/{{ recipe.id }}'">
-                    <div class="browse-card-cont">
-                        <img src="{{ recipe.images[0] }}" alt="recipe-image">
-                    </div>
-                    <h1>{{ recipe.name }}</h1>
-                    <p>{{ recipe.description }}</p>
+            <div class="browse-card">
+                <div class="browse-card-cont" onclick="location.href='/recipe/{{ recipe.id }}'">
+                    <img src="{{ recipe.images[0] }}" alt="recipe-image">
+                </div>
+                <h1>{{ recipe.name }}</h1>
+                <p>{{ recipe.description }}</p>
+
+                
             </div>
         {% endfor %}
     </div>

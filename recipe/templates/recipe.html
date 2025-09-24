@@ -59,6 +59,15 @@
                         <span class="info-label">PUBLISHED</span>
                         <span class="info-value">{{ recipe.date.strftime('%d{} %b %Y'.format('th' if 10 <= recipe.date.day % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(recipe.date.day % 10, 'th'))) if recipe.date else "Not specified" }}</span>
                     </div>
+                    {% if session.get('user_name') %}
+                        <div class="info-box">
+                            <form method="post" action="{{ url_for('browse_bp.toggle_favourite', recipe_id=recipe.id) }}">
+                                <button type="submit" class="fav-btn" aria-label="Toggle favourite">
+                                    {{ "♥" if recipe.is_favourite else "♡" }}
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
 
                 <!-- Ingredients -->
