@@ -28,6 +28,14 @@
                 </div>
                 <h1>{{ recipe.name }}</h1>
                 <p>{{ recipe.description }}</p>
+
+                {% if session.get('user_name') %}
+                    <form method="POST" action="{{ url_for('browse_bp.toggle_favourite_recipe', recipe_id=recipe.id) }}" class="card-fav-form">
+                        <button type="submit" class="card-fav-btn{% if recipe.is_favourite %} favourited{% endif %}" aria-label="Toggle favourite">
+                            <span class="heart-icon">{{ '♥' if recipe.is_favourite else '♡' }}</span>
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         {% endfor %}
     </div>

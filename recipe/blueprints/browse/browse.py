@@ -77,7 +77,12 @@ def recipe(recipe_id):
 @login_required
 def toggle_favourite_recipe(recipe_id):
     services.toggle_favourite(recipe_id, repo.repo_instance)
-    return redirect(url_for('recipes_bp.recipe', recipe_id=recipe_id))
+    # Redirect back to the page the user came from so the UI reloads in the same context
+    ref = request.referrer
+    if ref:
+        return redirect(ref)
+    # fallback to browse page
+    return redirect(url_for('browse_bp.browse'))
 
 
 from flask import redirect, url_for
