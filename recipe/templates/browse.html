@@ -23,7 +23,7 @@
     <div class="recipes-cont">
         {% for recipe in recipes %}
             <div class="browse-card" id="card-{{ recipe.id }}">
-                <div class="browse-card-cont" onclick="location.href='/recipe/{{ recipe.id }}'">
+                <div class="browse-card-cont" onclick="location.href='{{ url_for('recipe_bp.recipe', recipe_id=recipe.id) }}{% if mode == 'favourites' %}?from=favourites{% endif %}'">
                     <img src="{{ recipe.images[0] }}" alt="recipe-image">
                 </div>
                 <h1>{{ recipe.name }}</h1>
