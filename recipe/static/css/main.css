@@ -15,19 +15,40 @@ nav {
     height: 75px;
     display: flex;
     align-items: center;
-    gap: 75px;
+    justify-content: space-between; /* left and right groups */
+    padding: 0 20px; /* small horizontal padding */
     font-size: 20px;
+    position: relative; /* allow absolute-centering of .nav-center */
+}
+
+/* Left, center and right nav groupings */
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.nav-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-left img {
+    width: 45px;
+    height: 45px;
+}
+
+.nav-right {
+    margin-left: auto; /* ensure it's pushed to the right */
 }
 
 a {
     text-decoration: none;
     color: black;
-}
-
-nav img {
-    width: 45px;
-    height: 45px;
-    margin-left: 30px;
 }
 
 h1 {
@@ -281,3 +302,21 @@ footer {
 
 /* Ensure the card has position: relative for absolute placement */
 .browse-card { position: relative; }
+
+/* identifier text next to the logo */
+.nav-id {
+    font-size: 0.85rem;
+    color: rgba(0,0,0,0.65);
+    margin-left: 8px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* hide identifier on very small screens to avoid crowding */
+@media (max-width: 420px) {
+    .nav-id {
+        display: none;
+    }
+}

@@ -9,7 +9,6 @@ from recipe.domainmodel.user import User
 from recipe.domainmodel.favourite import Favourite
 
 
-# ----------------------- Helper factory -----------------------
 def make_repo_with_recipe(recipe_id=1001, username='tester'):
     repo = MemoryRepository()
     author = Author(author_id=1, name='Author One')
@@ -27,7 +26,7 @@ def make_repo_with_recipe(recipe_id=1001, username='tester'):
 
 
 # ----------------------- Tests for toggle_favourite -----------------------
-
+# Monkeypatch used to simulate having different user states, allowing for isolated testing
 def test_toggle_favourite_returns_false_when_user_not_authenticated(monkeypatch):
     """
     If there is no authenticated user, toggle_favourite should return False.
