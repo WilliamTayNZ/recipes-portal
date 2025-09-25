@@ -28,12 +28,6 @@
                 </div>
                 <h1>{{ recipe.name }}</h1>
                 <p>{{ recipe.description }}</p>
-
-                {% if session.get('user_name') %}
-                    <button type="button" class="fav-btn{% if recipe.is_favourite %} favorited{% endif %}" data-recipe-id="{{ recipe.id }}">
-                        <span class="heart">{{ "♥" if recipe.is_favourite else "♡" }}</span>
-                    </button>
-                {% endif %}
             </div>
         {% endfor %}
     </div>
@@ -52,46 +46,5 @@
             <a href="{{ last_recipe_url }}">&raquo;</a> <!-- Double Right -->
         {% endif %}
     </div>
-
-
-    # update the favourite button and text, upon clicking the button
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const favButtons = document.querySelectorAll('.fav-btn');
-            
-            favButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent card click
-                    
-                    const recipeId = this.getAttribute('data-recipe-id');
-                    const heart = this.querySelector('.heart');
-                    
-                    // Make AJAX request
-                    fetch(`/favourites/${recipeId}/toggle`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Toggle the visual state
-                            if (data.is_favourite) {
-                                this.classList.add('favorited');
-                                heart.textContent = '♥';
-                            } else {
-                                this.classList.remove('favorited');
-                                heart.textContent = '♡';
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error toggling favourite:', error);
-                    });
-                });
-            });
-        });
-    </script>
 
 {% endblock %}

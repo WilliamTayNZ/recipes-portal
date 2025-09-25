@@ -151,6 +151,46 @@ class MemoryRepository(AbstractRepository):
             raise RepositoryException(f"Category with name: {category_name} does not exist")
         return [r for r in self.__recipes if getattr(getattr(r, "category", None), "name", None) == category_name]
 
+    def add_favourite(self, user: User, recipe: Recipe):
+        if user is None or recipe is None:
+            return
+        # create a Favourite domain object and add to user's favourites
+        from recipe.domainmodel.favourite import Favourite
+        identifier = getattr(user, 'username', None) or getattr(user, 'id', None)
+        fav = Favourite(user_id=identifier, user=user, recipe=recipe)
+        try:
+            user.add_favourite_recipe(fav)
+        except Exception:
+            # if user.add_favourite_recipe raises (duplicate), ignore
+            pass
+
+    def remove_favourite(self, user: User, recipe: Recipe):
+        if user is None or recipe is None:
+            return
+        # find the Favourite object for this recipe and remove it
+        fav_to_remove = None
+        for fav in list(getattr(user, 'favourite_recipes', [])):
+            if getattr(getattr(fav, 'recipe', None), 'id', None) == getattr(recipe, 'id', None):
+                fav_to_remove = fav
+                break
+        if fav_to_remove:
+            try:
+                user.remove_favourite_recipe(fav_to_remove)
+            except Exception:
+                pass
+
+    def get_user_favourites(self, username: str) -> List[Recipe]:
+        user = self.get_user(username)
+        if user is None:
+            return []
+        return [fav.recipe for fav in user.favourite_recipes if fav.recipe is not None]
+
+    def is_recipe_in_favourites(self, username: str, recipe_id: int) -> bool:
+        user = self.get_user(username)
+        if user is None:
+            return False
+        return any(fav.recipe.id == recipe_id for fav in user.favourite_recipes if fav.recipe is not None)
+
 def read_general_csv_file(filename: str): # Used for any csv file that is NOT recipes.csv, which is read with CSVDataReader
     with open(filename, encoding='utf-8-sig') as infile:
         reader = csv.reader(infile)

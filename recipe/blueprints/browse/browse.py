@@ -1,9 +1,8 @@
-from flask import Flask, render_template, Blueprint, request, jsonify
-from flask_login import login_required
+from flask import Flask, render_template, Blueprint, request, jsonify, session, redirect, url_for
+from flask_login import login_required, current_user
 import recipe.blueprints.browse.services as services
 from recipe.domainmodel.recipe import Recipe
 from recipe.domainmodel.author import Author
-from flask_login import current_user
 
 import recipe.adapters.repository as repo
 
@@ -68,13 +67,17 @@ def browse():
         mode="browse"
     )
 
-
-
 @recipes_blueprint.route('/recipe/<int:recipe_id>')
 def recipe(recipe_id):
     recipe = services.get_recipe(recipe_id, repo.repo_instance)
     services.annotate_is_favourite([recipe], repo.repo_instance)
     return render_template('recipe.html', recipe=recipe)
+
+@browse_blueprint.route('/recipe/<int:recipe_id>/toggle-favourite', methods=['POST'])
+@login_required
+def toggle_favourite_recipe(recipe_id):
+    services.toggle_favourite(recipe_id, repo.repo_instance)
+    return redirect(url_for('recipes_bp.recipe', recipe_id=recipe_id))
 
 
 from flask import redirect, url_for
@@ -120,8 +123,6 @@ def _render_list(recipes, filter_by=None, query=""):
         mode=mode
     )
 
-# add comment
-
 @browse_blueprint.route('/favourites', methods=['GET'])
 @login_required
 def favourites():
@@ -136,31 +137,3 @@ def favourites():
         recipes = []
     services.annotate_is_favourite(recipes, repo.repo_instance)
     return _render_list(recipes, filter_by=filter_by, query=query)
-
-@browse_blueprint.route('/favourites/<int:recipe_id>/toggle', methods=['POST'])
-@login_required
-def toggle_favourite(recipe_id):
-    try:
-        # Get the current state before toggling
-        recipe = repo.repo_instance.get_recipe_by_id(recipe_id)
-        if recipe is None:
-            return jsonify({'success': False, 'error': 'Recipe not found'}), 404
-        
-        # Check current favorite status
-        user = current_user
-        fav_recipe_ids = {
-            getattr(getattr(fav, 'recipe', None), 'id', None)
-            for fav in getattr(user, 'favourite_recipes', [])
-        }
-        was_favourite = recipe_id in fav_recipe_ids
-        
-        # Toggle the favorite
-        services.toggle_favourite(recipe_id, repo.repo_instance)
-        
-        # Return the new state
-        return jsonify({
-            'success': True, 
-            'is_favourite': not was_favourite
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500

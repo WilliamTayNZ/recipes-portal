@@ -111,23 +111,31 @@ def search_favourites(filter_by: str, query: str, repo: AbstractRepository) -> L
         raise NonExistentRecipeException(f"No favourites found for {filter_by} containing '{query}'.")
     return filtered
 
+def toggle_favourite(recipe_id: int, repo: AbstractRepository) -> bool:
+    """Toggle favourite for recipe_id. Return True if now favourited, False if removed or on error."""
+    try:
+        user = _require_user()
+    except UnknownUserException:
+        return False
 
-def toggle_favourite(recipe_id: int, repo: AbstractRepository) -> None:
-    user = _require_user()
-    recipe = repo.get_recipe_by_id(recipe_id)
-    if recipe is None:
-        raise NonExistentRecipeException(f"Recipe with id {recipe_id} does not exist.")
+    if repo is None:
+        return False
 
-    favs: List[Favourite] = getattr(user, 'favourite_recipes', [])
-    
-    # Check if this recipe is already favorited by comparing recipe IDs
-    for existing in list(favs):
-        existing_recipe = getattr(existing, 'recipe', None)
-        if existing_recipe and getattr(existing_recipe, 'id', None) == recipe_id:
-            user.remove_favourite_recipe(existing)
-            return
-    
-    # If not found, add it
-    identifier = _current_user_identifier()
-    target = Favourite(user_id=identifier, user=user, recipe=recipe)
-    user.add_favourite_recipe(target)
+    recipe = None
+    try:
+        recipe = repo.get_recipe_by_id(recipe_id)
+    except Exception:
+        recipe = None
+
+    if not recipe:
+        return False
+
+    try:
+        if repo.is_recipe_in_favourites(user.username, recipe_id):
+            repo.remove_favourite(user, recipe)
+            return False
+        else:
+            repo.add_favourite(user, recipe)
+            return True
+    except Exception:
+        return False

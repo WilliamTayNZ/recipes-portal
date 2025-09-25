@@ -15,7 +15,7 @@ def create_app(test_config=None):
     if test_config is not None:
         # Load test configuration, and override any configuration settings.
         app.config.from_mapping(test_config)
-        data_path = app.config['TEST_DATA_PATH']
+        data_path = Path(app.config['TEST_DATA_PATH'])
 
     repo.repo_instance = MemoryRepository()
     populate(data_path, repo.repo_instance)

@@ -222,7 +222,6 @@ footer {
 
 
 /* Search Bar */
-
 .search-bar {
     display: flex;
     gap: 10px;
@@ -237,37 +236,4 @@ footer {
 .search-bar button {
     padding: 8px;
     font-size: 1rem;
-}
-
-/* Favourite button for browse cards */
-.fav-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: all 0.2s ease;
-    z-index: 10;
-}
-
-.fav-btn:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: scale(1.1);
-}
-
-.fav-btn .heart {
-    color: #ccc;
-    transition: color 0.2s ease;
-}
-
-.fav-btn.favorited .heart {
-    color: #e74c3c;
 }

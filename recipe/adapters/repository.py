@@ -5,6 +5,7 @@ from datetime import date
 from recipe.domainmodel.recipe import Recipe
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
+from recipe.domainmodel.user import User
 
 repo_instance = None
 
@@ -22,7 +23,8 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_recipe_by_id(self) -> List[Recipe]:
+    def get_recipe_by_id(self, recipe_id: int):
+        """Return a single Recipe by id"""
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -71,4 +73,24 @@ class AbstractRepository(abc.ABC):
 
     @abc.abstractmethod
     def get_recipes_by_name(self, name: str) -> List[Recipe]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def add_favourite(self, user: User, recipe: Recipe):
+        """Add a recipe to user's favorites"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def remove_favourite(self, user: User, recipe: Recipe):
+        """Remove a recipe from user's favorites"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_user_favourites(self, username: str) -> List[Recipe]:
+        """Get all favorite recipes for a user"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def is_recipe_in_favourites(self, username: str, recipe_id: int) -> bool:
+        """Check if a recipe is in user's favorites"""
         raise NotImplementedError
