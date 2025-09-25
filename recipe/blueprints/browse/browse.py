@@ -77,12 +77,23 @@ def recipe(recipe_id):
 @login_required
 def toggle_favourite_recipe(recipe_id):
     services.toggle_favourite(recipe_id, repo.repo_instance)
-    # Redirect back to the page the user came from so the UI reloads in the same context
+
+    # Prefer explicit next value from the form (set in templates) so we can include a fragment
+    next_url = request.form.get('next')
+    if next_url:
+        return redirect(next_url)
+
+    # Fallback to referrer (strip and append fragment) or browse
     ref = request.referrer
-    if ref:
+    if not ref:
+        return redirect(url_for('browse_bp.browse'))
+
+    try:
+        base = ref.split('#')[0]
+        new_url = f"{base}#card-{recipe_id}"
+        return redirect(new_url)
+    except Exception:
         return redirect(ref)
-    # fallback to browse page
-    return redirect(url_for('browse_bp.browse'))
 
 
 from flask import redirect, url_for

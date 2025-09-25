@@ -22,7 +22,7 @@
 
     <div class="recipes-cont">
         {% for recipe in recipes %}
-            <div class="browse-card">
+            <div class="browse-card" id="card-{{ recipe.id }}">
                 <div class="browse-card-cont" onclick="location.href='/recipe/{{ recipe.id }}'">
                     <img src="{{ recipe.images[0] }}" alt="recipe-image">
                 </div>
@@ -31,7 +31,9 @@
 
                 {% if session.get('user_name') %}
                     <form method="POST" action="{{ url_for('browse_bp.toggle_favourite_recipe', recipe_id=recipe.id) }}" class="card-fav-form">
-                        <button type="submit" class="card-fav-btn{% if recipe.is_favourite %} favourited{% endif %}" aria-label="Toggle favourite">
+                        {# prefer an explicit 'next' path so server can redirect back exactly where we are #}
+                        <input type="hidden" name="next" value="{{ request.full_path }}#card-{{ recipe.id }}" />
+                        <button type="submit" class="card-fav-btn{% if recipe.is_favourite %} favourited{% endif %}" aria-label="Toggle favourite" data-card-id="card-{{ recipe.id }}">
                             <span class="heart-icon">{{ '♥' if recipe.is_favourite else '♡' }}</span>
                         </button>
                     </form>
@@ -54,5 +56,64 @@
             <a href="{{ last_recipe_url }}">&raquo;</a> <!-- Double Right -->
         {% endif %}
     </div>
+
+    <script>
+        // Preserve exact scroll position across the POST-Redirect-GET flow for card favourite forms.
+        (function() {
+            const SCROLL_KEY = 'browse_fav_scrollY';
+            const TARGET_KEY = 'browse_fav_target';
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const forms = document.querySelectorAll('.card-fav-form');
+                forms.forEach(form => {
+                    form.addEventListener('submit', function() {
+                        try {
+                            const btn = form.querySelector('.card-fav-btn');
+                            const cardId = btn ? btn.getAttribute('data-card-id') : null;
+                            // store scroll position and target in sessionStorage
+                            sessionStorage.setItem(SCROLL_KEY, String(window.scrollY || window.pageYOffset || 0));
+                            if (cardId) sessionStorage.setItem(TARGET_KEY, cardId);
+                        } catch (e) {
+                            // nothing to do on error
+                        }
+                        // allow form to submit normally
+                    }, {passive: true});
+                });
+            });
+
+            // Restore after 'load' so images and fonts have settled and layout is stable
+            window.addEventListener('load', function() {
+                try {
+                    const storedY = sessionStorage.getItem(SCROLL_KEY);
+                    const storedTarget = sessionStorage.getItem(TARGET_KEY);
+                    if (storedY === null) return;
+
+                    // Try to scroll to the element with id storedTarget first (preferred)
+                    if (storedTarget) {
+                        const el = document.getElementById(storedTarget);
+                        if (el) {
+                            const headerOffset = 80; // adjust if your header height differs
+                            const rect = el.getBoundingClientRect();
+                            const targetY = window.pageYOffset + rect.top - headerOffset;
+                            window.scrollTo({ top: Math.max(0, targetY), behavior: 'auto' });
+                            sessionStorage.removeItem(SCROLL_KEY);
+                            sessionStorage.removeItem(TARGET_KEY);
+                            return;
+                        }
+                    }
+
+                    // fallback: restore exact Y coordinate
+                    const y = parseInt(storedY, 10);
+                    if (!isNaN(y)) {
+                        window.scrollTo({ top: y, behavior: 'auto' });
+                        sessionStorage.removeItem(SCROLL_KEY);
+                        sessionStorage.removeItem(TARGET_KEY);
+                    }
+                } catch (e) {
+                    // ignore storage/scroll errors
+                }
+            });
+        })();
+    </script>
 
 {% endblock %}
