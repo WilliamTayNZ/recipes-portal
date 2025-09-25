@@ -86,7 +86,10 @@ def test_repository_can_add_author_and_get_by_id(in_memory_repo, author_alice):
 
 def test_repository_can_add_author_and_get_by_name(in_memory_repo, author_alice):
     in_memory_repo.add_author(author_alice)
-    assert in_memory_repo.get_author_by_name("Alice") is author_alice
+    assert in_memory_repo.get_authors_by_name("Alice")[0] is author_alice
+
+def test_repository_can_get_2_authors_with_same_name(in_memory_repo):
+    assert len(in_memory_repo.get_authors_by_name("Diana Adams")) == 2
 
 def test_repository_rejects_non_author_on_add(in_memory_repo):
     with pytest.raises(TypeError):
@@ -97,9 +100,10 @@ def test_repository_raises_for_duplicate_author_id(in_memory_repo, author_alice)
     with pytest.raises(RepositoryException):
         in_memory_repo.add_author(author_alice)
 
+
 def test_repository_raises_for_missing_author_name(in_memory_repo):
     with pytest.raises(RepositoryException):
-        in_memory_repo.get_author_by_name('Mihir Patil')
+        in_memory_repo.get_authors_by_name('Mihir Patil')
 
 def test_repository_can_get_recipes_by_author_name(in_memory_repo, recipe_1, recipe_2, author_alice):
     in_memory_repo.add_recipe(recipe_1)
@@ -150,7 +154,7 @@ def test_repository_links_recipe_with_author_and_category(in_memory_repo, recipe
     in_memory_repo.add_category(cat_drink)
     in_memory_repo.add_recipe(recipe_2)
 
-    author = in_memory_repo.get_author_by_name(author_alice.name)
+    author = in_memory_repo.get_author_by_id(author_alice.id)
     category = in_memory_repo.get_category_by_name(cat_drink.name)
 
     print(f"Author: {author}")

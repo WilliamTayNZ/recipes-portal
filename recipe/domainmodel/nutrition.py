@@ -20,6 +20,27 @@ class Nutrition:
         self.__sugar = sugar  # g
         self.__protein = protein  # g
 
+    def health_star_rating(self):
+        # Make sure required values exist
+        if self.calories is None or self.sugar is None or self.saturated_fat is None \
+           or self.sodium is None or self.fiber is None or self.protein is None:
+            return None
+
+        # Start at 5 stars
+        score = 5.0
+
+        # Deduct points for 'bad' nutrients
+        score -= (self.saturated_fat / 5) * 0.5       # saturated fat penalty
+        score -= (self.sugar / 10) * 0.3              # sugar penalty
+        score -= (self.sodium / 1000) * 0.5           # sodium penalty
+
+        # Add points for 'good' nutrients
+        score += (self.fiber / 5) * 0.4               # fiber bonus
+        score += (self.protein / 10) * 0.3            # protein bonus
+
+        # Clamp between 0 and 5 stars
+        return max(0.0, min(5.0, round(score, 1)))
+
     def __repr__(self) -> str:
         return (f"Nutrition(id={self.__id}, calories={self.__calories}, fat={self.__fat}, "
                 f"saturated_fat={self.__saturated_fat}, cholesterol={self.__cholesterol}, "

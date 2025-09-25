@@ -52,7 +52,7 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_author_by_name(self, author_name: str):
+    def get_authors_by_name(self, author_name: str):
         raise NotImplementedError
 
     @abc.abstractmethod

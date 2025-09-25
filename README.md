@@ -59,6 +59,26 @@ The data files are modified excerpts downloaded from:
 
 https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews/
 
+## Health Star Rating Formula
+
+Each recipe in this application is given a **Health Star Rating (0–5 stars)** based on its per-serving nutritional values.  
+The formula is designed to reward nutrients that are generally considered beneficial, while penalizing those that are linked to less healthy outcomes when consumed in excess.
+
+- **Starting point:** Every recipe begins with a baseline of **5 stars**.  
+- **Deductions (penalties):**  
+  - Saturated fat: `-0.5 stars per 5g`  
+  - Sugar: `-0.3 stars per 10g`  
+  - Sodium: `-0.5 stars per 1000mg`  
+- **Additions (bonuses):**  
+  - Fiber: `+0.4 stars per 5g`  
+  - Protein: `+0.3 stars per 10g`  
+
+**Final rating:**  
+The result is rounded to one decimal place and **clamped between 0 and 5 stars**.  
+
+If a recipe is missing key nutrition data (calories, sugar, saturated fat, sodium, fiber, or protein), the health star rating is shown as: “Health star rating unavailable”.
+
+
 
 
 

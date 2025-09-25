@@ -200,4 +200,35 @@
         </div>
     {% endif %}
 
+    <!-- Health Star -->
+    <div class="health-star">
+        {% if recipe.nutrition %}
+            <span class="health-star-label">Health Star Rating:</span><br>
+            <div class="health-star-display">
+                {% set rating = recipe.nutrition.health_star_rating() %}
+                {% set full_stars = rating|int %}
+                {% set has_half_star = (rating - full_stars) >= 0.5 %}
+                
+                <!-- Full stars -->
+                {% for i in range(full_stars) %}
+                    <span class="star">★</span>
+                {% endfor %}
+                
+                <!-- Half star (optional if you want to support halves) -->
+                {% if has_half_star %}
+                    <span class="star half">★</span>
+                {% endif %}
+                
+                <!-- Empty stars -->
+                {% for i in range(5 - full_stars - (1 if has_half_star else 0)) %}
+                    <span class="star empty">☆</span>
+                {% endfor %}
+            </div>
+            <div class="health-star-score">
+                ({{ rating }}/5)
+            </div>
+        {% else %}
+            <span>No health star rating available.</span>
+        {% endif %}
+    </div>
 {% endblock %}
