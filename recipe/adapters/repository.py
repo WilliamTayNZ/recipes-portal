@@ -6,6 +6,7 @@ from recipe.domainmodel.recipe import Recipe
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
 from recipe.domainmodel.user import User
+from recipe.domainmodel.review import Review
 
 repo_instance = None
 
@@ -75,6 +76,11 @@ class AbstractRepository(abc.ABC):
     def get_recipes_by_name(self, name: str) -> List[Recipe]:
         raise NotImplementedError
 
+    @abc.abstractmethod    
+    def add_review(self, review: Review):
+        """Add a review to a recipe"""
+        raise NotImplementedError
+
     @abc.abstractmethod
     def add_favourite(self, user: User, recipe: Recipe):
         """Add a recipe to user's favorites"""
@@ -92,5 +98,11 @@ class AbstractRepository(abc.ABC):
 
     @abc.abstractmethod
     def is_recipe_in_favourites(self, username: str, recipe_id: int) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def delete_review(self, review_id: int, username: str):
+        """Delete a review if it belongs to the specified user"""
+        raise NotImplementedError
         """Check if a recipe is in user's favorites"""
         raise NotImplementedError
