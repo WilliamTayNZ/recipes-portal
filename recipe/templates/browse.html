@@ -2,9 +2,11 @@
 {% block title %}Browse{% endblock %}
 {% block content %}
     <div class="heading-cont">
-        <h2>BROWSE RECIPES!</h2>
+        <h2>{{ "MY FAVOURITES" if mode == "favourites" else "BROWSE RECIPES!" }}</h2>
 
-        <form method="GET" action="{{ url_for('browse_bp.browse') }}" class="search-bar">
+        <form method="GET"
+              action="{{ url_for('browse_bp.favourites') if mode == 'favourites' else url_for('browse_bp.browse') }}"
+              class="search-bar">
             <select name="filter_by">
                 <option value="name" {% if filter_by == 'name' %}selected{% endif %}>Recipe Name</option>
                 <option value="category" {% if filter_by == 'category' %}selected{% endif %}>Category</option>
@@ -20,12 +22,22 @@
 
     <div class="recipes-cont">
         {% for recipe in recipes %}
-                <div class="browse-card" onclick="location.href='/recipe/{{ recipe.id }}'">
-                    <div class="browse-card-cont">
-                        <img src="{{ recipe.images[0] }}" alt="recipe-image">
-                    </div>
-                    <h1>{{ recipe.name }}</h1>
-                    <p>{{ recipe.description }}</p>
+            <div class="browse-card" id="card-{{ recipe.id }}">
+                <div class="browse-card-cont" onclick="location.href='{{ url_for('recipe_bp.recipe', recipe_id=recipe.id) }}{% if mode == 'favourites' %}?from=favourites{% endif %}'">
+                    <img src="{{ recipe.images[0] }}" alt="recipe-image">
+                </div>
+                <h1>{{ recipe.name }}</h1>
+                <p>{{ recipe.description }}</p>
+
+                {% if session.get('user_name') %}
+                    <form method="POST" action="{{ url_for('browse_bp.toggle_favourite_recipe', recipe_id=recipe.id) }}" class="card-fav-form">
+                        {# prefer an explicit 'next' path so server can redirect back exactly where we are #}
+                        <input type="hidden" name="next" value="{{ request.full_path }}#card-{{ recipe.id }}" />
+                        <button type="submit" class="card-fav-btn{% if recipe.is_favourite %} favourited{% endif %}" aria-label="Toggle favourite" data-card-id="card-{{ recipe.id }}">
+                            <span class="heart-icon">{{ '♥' if recipe.is_favourite else '♡' }}</span>
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
@@ -44,5 +56,6 @@
             <a href="{{ last_recipe_url }}">&raquo;</a> <!-- Double Right -->
         {% endif %}
     </div>
+
 
 {% endblock %}

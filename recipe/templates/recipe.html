@@ -17,7 +17,26 @@
         <div class="recipe-content">
             <!-- Left Side - Image Gallery -->
             <div class="image-gallery">
-                <a href="{{ url_for('browse_bp.browse') }}" class="back-link">&lt; Back to recipes</a>
+                <div class="gallery-header">
+                    {% set from_param = request.args.get('from') %}
+                    {% if from_param == 'favourites' %}
+                        <a href="{{ url_for('browse_bp.favourites') }}" class="back-link">&lt; Return to favourites</a>
+                    {% else %}
+                        <a href="{{ url_for('browse_bp.browse') }}" class="back-link">&lt; Back to recipes</a>
+                    {% endif %}
+
+                    {# Add rectangular favourite button (server-side form) on the right of the back-link #}
+                    {% if session.get('user_name') %}
+                        <form method="POST" action="{{ url_for('browse_bp.toggle_favourite_recipe', recipe_id=recipe.id) }}" class="favourite-form">
+                            <input type="hidden" name="next" value="{{ request.full_path }}" />
+                            <button type="submit" class="favourite-btn{% if recipe.is_favourite %} favourited{% endif %}">
+                                <span class="heart-icon">{% if recipe.is_favourite %}♥{% else %}♡{% endif %}</span>
+                                <span class="fav-text">{% if recipe.is_favourite %}Remove from favourites{% else %}Add to favourites{% endif %}</span>
+                            </button>
+                        </form>
+                    {% endif %}
+
+                </div>
                 
                 <div class="main-image-container">
                     <div class="main-image">
@@ -180,6 +199,8 @@
             </div>
         </div>
     {% endif %}
+
+    <!-- Health Star -->
     <div class="health-star">
         {% if recipe.nutrition %}
             <span class="health-star-label">Health Star Rating:</span><br>
@@ -210,6 +231,4 @@
             <span>No health star rating available.</span>
         {% endif %}
     </div>
-
-
 {% endblock %}

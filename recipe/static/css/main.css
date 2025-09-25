@@ -154,6 +154,9 @@ footer {
     justify-content: flex-start;
     cursor: pointer;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    position: relative;
+    /* Ensure anchored fragment positions account for fixed header */
+    scroll-margin-top: 96px; /* adjust to match header height */
 }
 
 .browse-card:hover {
@@ -221,7 +224,6 @@ footer {
 
 
 /* Search Bar */
-
 .search-bar {
     display: flex;
     gap: 10px;
@@ -237,3 +239,45 @@ footer {
     padding: 8px;
     font-size: 1rem;
 }
+
+/* Card favourite button (small heart in top-right of card) */
+.card-fav-form {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    margin: 0;
+}
+
+.card-fav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(0,0,0,0.06);
+    cursor: pointer;
+    padding: 0;
+    font-size: 18px;
+    color: #666;
+    transition: background 0.12s ease, transform 0.12s ease;
+}
+
+.card-fav-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,1);
+}
+
+.card-fav-btn .heart-icon {
+    color: #cfcfcf; /* default grey heart */
+    transition: color 0.12s ease;
+    line-height: 1;
+}
+
+.card-fav-btn.favourited .heart-icon {
+    color: #ff4081; /* pink heart when favourited */
+}
+
+/* Ensure the card has position: relative for absolute placement */
+.browse-card { position: relative; }

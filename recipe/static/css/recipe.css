@@ -97,9 +97,15 @@ nav img {
     max-width: 500px;
 }
 
+.gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
 .back-link {
     display: inline-block;
-    margin-bottom: 20px;
     color: #000;
     text-decoration: none;
     font-size: 16px;
@@ -107,6 +113,48 @@ nav img {
 
 .back-link:hover {
     text-decoration: underline;
+}
+
+/* Favorite button: compact and only heart changes color when favourited */
+.favourite-form {
+    margin: 0;
+}
+
+.favourite-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #fff; /* always white */
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    padding: 6px 10px; /* smaller rectangle */
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #222;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.favourite-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.heart-icon {
+    color: #cfcfcf; /* default grey heart */
+    font-size: 16px;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+/* When favourited, only change the heart color; keep the box white */
+.favourite-btn.favourited .heart-icon {
+    color: #ff4081; /* coloured heart */
+}
+
+/* Keep text the same color and layout regardless of state */
+.favourite-btn .fav-text {
+    white-space: nowrap;
+    color: inherit;
 }
 
 .main-image-container {
