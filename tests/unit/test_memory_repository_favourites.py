@@ -11,9 +11,9 @@ from recipe.domainmodel.user import User
 
 def test_add_and_remove_favourite_updates_user_favourites():
     """
-    GIVEN a MemoryRepository, a User and a Recipe
-    WHEN the repository adds the recipe to the user's favourites and later removes it
-    THEN the user's favourite list and is_recipe_in_favourites reflect the changes
+    Given a MemoryRepository, a User and a Recipe
+    When the repository adds the recipe to the user's favourites and later removes it
+    Then the user's favourite list and is_recipe_in_favourites reflect the changes
     """
     repo = MemoryRepository()
 
