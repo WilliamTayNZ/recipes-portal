@@ -15,11 +15,12 @@ class MemoryRepository(AbstractRepository):
     def __init__(self):
         self.__recipes: List[Recipe] = []
         self.__recipes_index = dict()  # id -> Recipe
-        self.__authors = dict()  # name -> Author
         self.__categories = dict() # name -> Category
         self.__users = dict() # username -> User
 
         self.__authors_by_id = dict()  # id -> Author
+        self.__categories_by_id = dict() # id -> Category
+        self.__authors_by_name = dict() # name -> List(Author)
 
     
     # User functions
@@ -84,12 +85,6 @@ class MemoryRepository(AbstractRepository):
     def add_author(self, author: Author):
         if not isinstance(author, Author):
             raise TypeError("Expected an Author instance")
-
-        name = getattr(author, "name", None)
-        if name is None:
-            raise RepositoryException("Author has no author_name")
-        if name in self.__authors:
-            raise RepositoryException(f"Author with name: {author.name} already exists")
         
         author_id = getattr(author, "id", None)
         if author_id is None:
@@ -97,19 +92,27 @@ class MemoryRepository(AbstractRepository):
         if author_id in self.__authors_by_id:
             raise RepositoryException(f"Author with id: {author_id} already exists")
 
-        self.__authors[author.name] = author
         self.__authors_by_id[author.id] = author
 
-    def get_author_by_name(self, name: str) -> Author:
-        if name not in self.__authors:
+        author_name = getattr(author, "name", None)
+        if author_name is None:
+            raise RepositoryException("Author has no name")
+        if author_name not in self.__authors_by_name:
+            self.__authors_by_name[author.name] = [author]
+        else:
+            self.__authors_by_name[author.name].append(author)
+
+
+    def get_authors_by_name(self, name: str) -> Author:
+        if name not in self.__authors_by_name:
             raise RepositoryException(f"Author with name: {name} does not exist")
-        return self.__authors[name]
+        return self.__authors_by_name[name]
 
     def get_author_by_id(self, author_id: int) -> Author:
         if author_id not in self.__authors_by_id:
             raise RepositoryException(f"Author with id: {author_id} does not exist")
         return self.__authors_by_id[author_id]
-
+    
     def get_recipes_by_author_id(self, author_id: int) -> List[Recipe]:
         if author_id not in self.__authors_by_id:
             raise RepositoryException(f"Author with id: {author_id} does not exist")
@@ -118,7 +121,6 @@ class MemoryRepository(AbstractRepository):
     def get_recipes_by_author_name(self, author_name: str) -> List[Recipe]:
         #return [r for r in self.__recipes if getattr(getattr(r, "author", None), "author_name", None) == author_name]
         return [r for r in self.__recipes if getattr(getattr(r, "author", None), "name", None) == author_name]
-
 
     # Category functions
     def add_category(self, category: Category):
@@ -234,7 +236,7 @@ def populate(data_path: Path, repo: AbstractRepository):
                 pass
 
         print(f"[populate] loaded {repo.get_number_of_recipe()} recipes, "
-              f"{len(getattr(repo, '_MemoryRepository__authors', {}))} authors, "
+              f"{len(getattr(repo, '_MemoryRepository__authors_by_id', {}))} authors, "
               f"{len(getattr(repo, '_MemoryRepository__categories', {}))} categories,"
               f"{len(getattr(repo, '_MemoryRepository__users', {}))} users",
               )
