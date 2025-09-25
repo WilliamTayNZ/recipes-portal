@@ -2,6 +2,11 @@ import pytest
 
 from flask import session
 
+def test_index(client):
+    # Check that we can retrieve the home page.
+    response = client.get('/')
+    assert response.status_code == 200
+    assert b'WELCOME TO OUR RECIPE PORTAL!' in response.data
 
 def test_register(client):
     # Check that we retrieve the register page.
@@ -14,6 +19,27 @@ def test_register(client):
         data={'user_name': 'gmichael', 'password': 'CarelessWhisper1984'}
     )
     assert response.headers['Location'] == '/authentication/login'
+
+def test_register_with_invalid_input(client, user_name, password, message):
+    # Check that attempting to register with invalid combinations of user name and password generate appropriate error
+    # messages.
+    response = client.post(
+        '/authentication/register',
+        data={'user_name': user_name, 'password': password}
+    )
+    assert message in response.data
+
+def test_login(client, auth):
+    # Register user first
+    client.post('/authentication/register', data={
+        'user_name': 'tester', 'password': 'Password123!'
+    })
+    # Then login
+    response = client.post('/authentication/login', data={
+        'user_name': 'tester', 'password': 'Password123!'
+    })
+    assert response.headers['Location'] == '/'
+
 
 @pytest.mark.parametrize(('user_name', 'password', 'message'), (
         ('', '', b'Your user name is required'),
@@ -42,13 +68,3 @@ def test_logout(client, auth):
         # Check that logging out clears the user's session.
         auth.logout()
         assert 'user_id' not in session
-
-'''TO UPDATE:
-def test_index(client):
-    # Check that we can retrieve the home page.
-    response = client.get('/')
-    assert response.status_code == 200
-    assert b'The COVID Pandemic of 2020' in response.data
-'''
-
-# Make tests for each page
