@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Blueprint, request
+from flask import Flask, render_template, Blueprint, request, jsonify
 from flask_login import login_required
 import recipe.blueprints.browse.services as services
 from recipe.domainmodel.recipe import Recipe
@@ -120,6 +120,8 @@ def _render_list(recipes, filter_by=None, query=""):
         mode=mode
     )
 
+# add comment
+
 @browse_blueprint.route('/favourites', methods=['GET'])
 @login_required
 def favourites():
@@ -138,6 +140,27 @@ def favourites():
 @browse_blueprint.route('/favourites/<int:recipe_id>/toggle', methods=['POST'])
 @login_required
 def toggle_favourite(recipe_id):
-    services.toggle_favourite(recipe_id, repo.repo_instance)
-    ref = request.referrer or url_for('browse_bp.favourites')
-    return redirect(ref)
+    try:
+        # Get the current state before toggling
+        recipe = repo.repo_instance.get_recipe_by_id(recipe_id)
+        if recipe is None:
+            return jsonify({'success': False, 'error': 'Recipe not found'}), 404
+        
+        # Check current favorite status
+        user = current_user
+        fav_recipe_ids = {
+            getattr(getattr(fav, 'recipe', None), 'id', None)
+            for fav in getattr(user, 'favourite_recipes', [])
+        }
+        was_favourite = recipe_id in fav_recipe_ids
+        
+        # Toggle the favorite
+        services.toggle_favourite(recipe_id, repo.repo_instance)
+        
+        # Return the new state
+        return jsonify({
+            'success': True, 
+            'is_favourite': not was_favourite
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500

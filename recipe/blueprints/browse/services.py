@@ -119,12 +119,15 @@ def toggle_favourite(recipe_id: int, repo: AbstractRepository) -> None:
         raise NonExistentRecipeException(f"Recipe with id {recipe_id} does not exist.")
 
     favs: List[Favourite] = getattr(user, 'favourite_recipes', [])
-    identifier = _current_user_identifier()
-    target = Favourite(user_id=identifier, user=user, recipe=recipe)
-
-    # Remove if exists, else add
+    
+    # Check if this recipe is already favorited by comparing recipe IDs
     for existing in list(favs):
-        if getattr(existing, 'user_id') == identifier and getattr(existing, 'recipe') == recipe:
+        existing_recipe = getattr(existing, 'recipe', None)
+        if existing_recipe and getattr(existing_recipe, 'id', None) == recipe_id:
             user.remove_favourite_recipe(existing)
             return
+    
+    # If not found, add it
+    identifier = _current_user_identifier()
+    target = Favourite(user_id=identifier, user=user, recipe=recipe)
     user.add_favourite_recipe(target)

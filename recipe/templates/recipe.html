@@ -17,7 +17,15 @@
         <div class="recipe-content">
             <!-- Left Side - Image Gallery -->
             <div class="image-gallery">
-                <a href="{{ url_for('browse_bp.browse') }}" class="back-link">&lt; Back to recipes</a>
+                <div class="gallery-header">
+                    <a href="{{ url_for('browse_bp.browse') }}" class="back-link">&lt; Back to recipes</a>
+                    {% if session.get('user_name') %}
+                        <button type="button" class="favourite-btn{% if recipe.is_favourite %} favorited{% endif %}" data-recipe-id="{{ recipe.id }}">
+                            <span class="heart">{{ "♥" if recipe.is_favourite else "♡" }}</span>
+                            <span class="fav-text">{{ "Remove from favourites" if recipe.is_favourite else "Add to favourites" }}</span>
+                        </button>
+                    {% endif %}
+                </div>
                 
                 <div class="main-image-container">
                     <div class="main-image">
@@ -59,15 +67,6 @@
                         <span class="info-label">PUBLISHED</span>
                         <span class="info-value">{{ recipe.date.strftime('%d{} %b %Y'.format('th' if 10 <= recipe.date.day % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(recipe.date.day % 10, 'th'))) if recipe.date else "Not specified" }}</span>
                     </div>
-                    {% if session.get('user_name') %}
-                        <div class="info-box">
-                            <form method="post" action="{{ url_for('browse_bp.toggle_favourite', recipe_id=recipe.id) }}">
-                                <button type="submit" class="fav-btn" aria-label="Toggle favourite">
-                                    {{ "♥" if recipe.is_favourite else "♡" }}
-                                </button>
-                            </form>
-                        </div>
-                    {% endif %}
                 </div>
 
                 <!-- Ingredients -->
@@ -189,4 +188,47 @@
             </div>
         </div>
     {% endif %}
+
+
+    #auto update the favourite button and text, upon clicking the button
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const favouriteBtn = document.querySelector('.favourite-btn');
+            
+            if (favouriteBtn) {
+                favouriteBtn.addEventListener('click', function() {
+                    const recipeId = this.getAttribute('data-recipe-id');
+                    const heart = this.querySelector('.heart');
+                    const favText = this.querySelector('.fav-text');
+                    
+                    // Make AJAX request
+                    fetch(`/favourites/${recipeId}/toggle`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Toggle the visual state
+                            if (data.is_favourite) {
+                                this.classList.add('favorited');
+                                heart.textContent = '♥';
+                                favText.textContent = 'Remove from favourites';
+                            } else {
+                                this.classList.remove('favorited');
+                                heart.textContent = '♡';
+                                favText.textContent = 'Add to favourites';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error toggling favourite:', error);
+                    });
+                });
+            }
+        });
+    </script>
+
 {% endblock %}

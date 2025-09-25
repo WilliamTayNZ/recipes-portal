@@ -97,9 +97,15 @@ nav img {
     max-width: 500px;
 }
 
+.gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
 .back-link {
     display: inline-block;
-    margin-bottom: 20px;
     color: #000;
     text-decoration: none;
     font-size: 16px;
@@ -107,6 +113,44 @@ nav img {
 
 .back-link:hover {
     text-decoration: underline;
+}
+
+.favourite-form {
+    margin: 0;
+}
+
+.favourite-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.favourite-btn:hover {
+    background: #e8e8e8;
+    border-color: #ccc;
+}
+
+.heart {
+    font-size: 16px;
+    color: #ccc;
+    transition: color 0.2s ease;
+}
+
+.favourite-btn.favorited .heart {
+    color: #e74c3c;
+}
+
+.fav-text {
+    white-space: nowrap;
 }
 
 .main-image-container {
