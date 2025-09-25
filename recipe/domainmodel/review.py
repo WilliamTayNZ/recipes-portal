@@ -30,6 +30,10 @@ class Review:
         return self.__id
 
     @property
+    def user(self):
+        return self.__user
+
+    @property
     def rating(self):
         return self.__rating
 

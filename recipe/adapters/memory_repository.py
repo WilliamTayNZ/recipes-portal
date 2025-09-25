@@ -17,6 +17,7 @@ class MemoryRepository(AbstractRepository):
         self.__recipes_index = dict()  # id -> Recipe
         self.__categories = dict() # name -> Category
         self.__users = dict() # username -> User
+        self.__reviews = dict()  # review_id -> Review
 
         self.__authors_by_id = dict()  # id -> Author
         self.__categories_by_id = dict() # id -> Category
@@ -153,6 +154,33 @@ class MemoryRepository(AbstractRepository):
             raise RepositoryException(f"Category with name: {category_name} does not exist")
         return [r for r in self.__recipes if getattr(getattr(r, "category", None), "name", None) == category_name]
 
+    # Review functions
+    def add_review(self, review):
+        print("Added a review successfully")
+        if not hasattr(review, 'recipe') or not hasattr(review, 'user'):
+            raise RepositoryException("Review must have recipe and user")
+        
+        recipe = self.get_recipe_by_id(review.recipe.id)
+        if recipe is None:
+            raise RepositoryException("Recipe not found")
+            
+        # Add the review to the recipe
+        recipe.add_review(review)
+        print("Added a review successfully")
+
+    def delete_review(self, review_id: int, username: str):
+        """Delete a review if it belongs to the specified user"""
+        recipe = self.get_recipe_by_id(review_id)
+        if recipe is None:
+            return False
+            
+        for review in recipe.reviews:
+            if review.reviewer_username == username:
+                recipe.reviews.remove(review)
+                return True
+        return False
+
+    # Favourite function
     def add_favourite(self, user: User, recipe: Recipe):
         if user is None or recipe is None:
             return
