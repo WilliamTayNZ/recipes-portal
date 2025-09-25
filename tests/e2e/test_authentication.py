@@ -25,8 +25,15 @@ def test_register_with_invalid_input(client, user_name, password, message):
     # messages.
     response = client.post(
         '/authentication/register',
-        data={'user_name': user_name, 'password': password}
+        data={'user_name': "tester", 'password': "aasdf"}
     )
+
+    # check for error message when register inputs are invalid
+    response = client.post(
+        '/authentication/register',
+        data = {'username': user_name, 'password': password}
+    )
+
     assert message in response.data
 
 def test_login(client, auth):
@@ -49,16 +56,6 @@ def test_login(client, auth):
             a lower case letter and a digit'),
         ('fmercury', 'Test#6^0', b'Your username is already taken - please supply another'),
 ))
-def test_register_with_invalid_input(client, user_name, password, message):
-    # Check that attempting to register with invalid combinations of user name and password generate appropriate error
-    # messages.
-
-    response = client.post(
-        '/authentication/register', 
-        data={'user_name': user_name, 'password': password}
-    )
-
-    assert message in response.data
 
 def test_logout(client, auth):
     # Login a user.
