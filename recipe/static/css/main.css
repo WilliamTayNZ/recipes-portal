@@ -16,9 +16,30 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-between; /* left and right groups */
-    padding: 0 20px; /* small horizontal padding */
+    padding: 0 40px; /* small horizontal padding */
     font-size: 20px;
     position: relative; /* allow absolute-centering of .nav-center */
+}
+
+/* Spacing between page links in navbar */ 
+.nav-left a,
+.nav-right a {
+    margin: 0 14px;
+    color: #444; 
+    font-weight: 400; 
+    transition: color 0.2s ease, font-weight 0.2s ease;
+}
+
+.nav-left a:hover,
+.nav-right a:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+/* Active link indicator (current page) */
+.nav-left a.active,
+.nav-right a.active {
+    font-weight: 550; 
 }
 
 /* Left, center and right nav groupings */

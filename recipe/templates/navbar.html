@@ -1,10 +1,13 @@
 <nav>
     <div class="nav-left">
         <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="noodles-logo">
-        <a href="{{ url_for('home_bp.home') }}">HOME</a>
-        <a href="{{ url_for('browse_bp.browse') }}">BROWSE</a>
+        <a href="{{ url_for('home_bp.home') }}"
+            class="{% if request.endpoint == 'home_bp.home' %}active{% endif %}">HOME</a>
+        <a href="{{ url_for('browse_bp.browse') }}"
+            class="{% if request.endpoint == 'browse_bp.browse' %}active{% endif %}">BROWSE</a>
         {% if session.get('user_name') %}
-            <a href="{{ url_for('browse_bp.favourites') }}">FAVOURITES</a>
+        <a href="{{ url_for('browse_bp.favourites') }}"
+            class="{% if request.endpoint == 'browse_bp.favourites' %}active{% endif %}">FAVOURITES</a>
         {% endif %}
     </div>
 
@@ -14,10 +17,14 @@
 
     <div class="nav-right">
         {% if session.get('user_name') %}
-            <a href="{{ url_for('authentication_bp.logout') }}">LOGOUT</a>
+            <a href="{{ url_for('authentication_bp.logout') }}"
+               class="{% if request.endpoint == 'authentication_bp.logout' %}active{% endif %}">LOGOUT</a>
         {% else %}
-            <a href="{{ url_for('authentication_bp.login') }}">LOGIN</a>
-            <a href="{{ url_for('authentication_bp.register') }}">REGISTER</a>
+            <a href="{{ url_for('authentication_bp.login') }}"
+               class="{% if request.endpoint == 'authentication_bp.login' %}active{% endif %}">LOGIN</a>
+
+            <a href="{{ url_for('authentication_bp.register') }}"
+               class="{% if request.endpoint == 'authentication_bp.register' %}active{% endif %}">REGISTER</a>
         {% endif %}
     </div>
 </nav>
