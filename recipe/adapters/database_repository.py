@@ -2,12 +2,23 @@ from datetime import date
 from typing import List
 
 from sqlalchemy import desc, asc
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
 
 from sqlalchemy.orm import scoped_session
 
-from covid.domain.model import User, Article, Comment, Tag
-from covid.adapters.repository import AbstractRepository
+from recipe.domainmodel.author import Author
+from recipe.domainmodel.category import Category
+from recipe.domainmodel.favourite import Favourite
+from recipe.domainmodel.nutrition import Nutrition
+from recipe.domainmodel.recipe import Recipe
+from recipe.domainmodel.review import Review
+from recipe.domainmodel.user import User
+# from recipe.domainmodel.recipe_image import RecipeImage
+# from recipe.domainmodel.recipe_ingredient import RecipeIngredient
+# from recipe.domainmodel.recipe_instruction import RecipeInstruction
+
+from recipe.adapters.repository import AbstractRepository
+
 
 
 class SessionContextManager:
