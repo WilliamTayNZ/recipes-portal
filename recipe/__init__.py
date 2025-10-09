@@ -51,7 +51,7 @@ def create_app(test_config=None):
 
             map_model_to_tables()
 
-            repo.repo_instance = MemoryRepository()
+            repo.repo_instance = MemoryRepository() # change later to sql repo
             populate(data_path, repo.repo_instance)
             print("REPOPULATING DATABASE...")
         else:
