@@ -48,10 +48,8 @@ def create_app(test_config=None):
             for table in reversed(mapper_registry.metadata.sorted_tables):
                 with database_engine.connect() as conn:
                     conn.execute(table.delete())
-
+                    
             map_model_to_tables()
-
-            repo.repo_instance = MemoryRepository() # change later to sql repo
             populate(data_path, repo.repo_instance)
             print("REPOPULATING DATABASE...")
         else:

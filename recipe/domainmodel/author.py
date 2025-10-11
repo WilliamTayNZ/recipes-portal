@@ -41,4 +41,4 @@ class Author:
         if recipe not in self.__recipes:
             self.__recipes.append(recipe)
         else:
-            raise ValueError("Recipe already exists for this author")
+            pass
