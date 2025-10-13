@@ -162,7 +162,10 @@ class SqlAlchemyRepository(AbstractRepository):
             return recipes
 
     def get_recipes_by_name_paginated(self, name: str, page: int, per_page: int) -> List[Recipe]:
-        """Search recipes by name with pagination - filters at database level"""
+        """
+        Search recipes by name with pagination, filtering at database level
+        Using ILIKE for case-insensitive matching
+        """
         offset = (page - 1) * per_page
         with self._session_cm as scm:
             if name:
@@ -180,7 +183,7 @@ class SqlAlchemyRepository(AbstractRepository):
             return scm.session.query(Recipe).count()
 
     def count_recipes_by_name(self, name: str) -> int:
-        """Count recipes matching name using SQL COUNT with WHERE clause"""
+        """Count recipes matching name using SQL COUNT with ILIKE for case-insensitive matching"""
         with self._session_cm as scm:
             if name:
                 return scm.session.query(Recipe).filter(
