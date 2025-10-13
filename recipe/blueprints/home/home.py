@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, url_for
-import random
 import recipe.adapters.repository as repo
+import recipe.blueprints.home.services as services
 
 home_blueprint = Blueprint('home_bp', __name__)
 
 @home_blueprint.route('/', methods=['GET'])
 def home():
-    featured = repo.repo_instance.get_featured_recipes(2) if repo.repo_instance else []
+    featured = services.get_featured_recipes()
     return render_template('index.html', featured_recipes=featured)
