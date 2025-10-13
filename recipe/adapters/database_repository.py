@@ -120,8 +120,7 @@ class SqlAlchemyRepository(AbstractRepository):
     def get_recipes(self) -> List[Recipe]:
         with self._session_cm as scm:
             recipes = scm.session.query(Recipe).all()
-            for recipe in recipes:
-                self._populate_recipe_data(recipe)
+            self._bulk_populate_recipes(recipes, scm.session)
             return recipes
 
     def get_recipes_by_id(self, id_list: List[int]) -> List[Recipe]:
@@ -129,8 +128,7 @@ class SqlAlchemyRepository(AbstractRepository):
             return []
         with self._session_cm as scm:
             recipes = scm.session.query(Recipe).filter(Recipe._Recipe__id.in_(id_list)).all()
-            for recipe in recipes:
-                self._populate_recipe_data(recipe)
+            self._bulk_populate_recipes(recipes, scm.session)
             return recipes
 
     def get_recipes_by_name(self, name: str) -> List[Recipe]:
@@ -139,8 +137,7 @@ class SqlAlchemyRepository(AbstractRepository):
             if name:
                 query = query.filter(Recipe._Recipe__name.ilike(f"%{name}%"))
             recipes = query.order_by(asc(Recipe._Recipe__name)).all()
-            for recipe in recipes:
-                self._populate_recipe_data(recipe)
+            self._bulk_populate_recipes(recipes, scm.session)
             return recipes
 
     # ====================
@@ -314,3 +311,54 @@ class SqlAlchemyRepository(AbstractRepository):
             RecipeInstruction._RecipeInstruction__recipe_id == recipe.id
         ).order_by(RecipeInstruction._RecipeInstruction__position).all()
         recipe._Recipe__instructions = [inst.step for inst in recipe_instructions]
+
+    def _bulk_populate_recipes(self, recipes: List[Recipe], session):
+        """Bulk populate multiple recipes with related data to avoid N+1 queries"""
+        if not recipes:
+            return
+        
+        recipe_ids = [recipe.id for recipe in recipes]
+        
+        # Bulk load all images for all recipes
+        recipe_images = session.query(RecipeImage).filter(
+            RecipeImage._RecipeImage__recipe_id.in_(recipe_ids)
+        ).order_by(RecipeImage._RecipeImage__recipe_id, RecipeImage._RecipeImage__position).all()
+        
+        # Bulk load all ingredients for all recipes
+        recipe_ingredients = session.query(RecipeIngredient).filter(
+            RecipeIngredient._RecipeIngredient__recipe_id.in_(recipe_ids)
+        ).order_by(RecipeIngredient._RecipeIngredient__recipe_id, RecipeIngredient._RecipeIngredient__position).all()
+        
+        # Bulk load all instructions for all recipes
+        recipe_instructions = session.query(RecipeInstruction).filter(
+            RecipeInstruction._RecipeInstruction__recipe_id.in_(recipe_ids)
+        ).order_by(RecipeInstruction._RecipeInstruction__recipe_id, RecipeInstruction._RecipeInstruction__position).all()
+        
+        # Group by recipe_id for efficient lookup
+        images_by_recipe = {}
+        for img in recipe_images:
+            if img.recipe_id not in images_by_recipe:
+                images_by_recipe[img.recipe_id] = []
+            images_by_recipe[img.recipe_id].append(img.url)
+        
+        ingredients_by_recipe = {}
+        quantities_by_recipe = {}
+        for ing in recipe_ingredients:
+            if ing.recipe_id not in ingredients_by_recipe:
+                ingredients_by_recipe[ing.recipe_id] = []
+                quantities_by_recipe[ing.recipe_id] = []
+            ingredients_by_recipe[ing.recipe_id].append(ing.ingredient)
+            quantities_by_recipe[ing.recipe_id].append(ing.quantity)
+        
+        instructions_by_recipe = {}
+        for inst in recipe_instructions:
+            if inst.recipe_id not in instructions_by_recipe:
+                instructions_by_recipe[inst.recipe_id] = []
+            instructions_by_recipe[inst.recipe_id].append(inst.step)
+        
+        # Populate each recipe
+        for recipe in recipes:
+            recipe._Recipe__images = images_by_recipe.get(recipe.id, [])
+            recipe._Recipe__ingredients = ingredients_by_recipe.get(recipe.id, [])
+            recipe._Recipe__ingredient_quantities = quantities_by_recipe.get(recipe.id, [])
+            recipe._Recipe__instructions = instructions_by_recipe.get(recipe.id, [])
