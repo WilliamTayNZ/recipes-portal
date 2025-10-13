@@ -6,6 +6,5 @@ home_blueprint = Blueprint('home_bp', __name__)
 
 @home_blueprint.route('/', methods=['GET'])
 def home():
-    recipes = repo.repo_instance.get_recipes() if repo.repo_instance else []
-    featured = random.sample(recipes, k=min(2, len(recipes))) if recipes else []
+    featured = repo.repo_instance.get_featured_recipes(2) if repo.repo_instance else []
     return render_template('index.html', featured_recipes=featured)

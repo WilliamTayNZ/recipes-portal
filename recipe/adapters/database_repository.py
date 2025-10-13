@@ -123,6 +123,72 @@ class SqlAlchemyRepository(AbstractRepository):
             self._bulk_populate_recipes(recipes, scm.session)
             return recipes
 
+    def get_featured_recipes(self, limit: int = 6) -> List[Recipe]:
+        with self._session_cm as scm:
+            # First, get all recipe IDs only (very fast query)
+            recipe_ids = [row[0] for row in scm.session.query(Recipe._Recipe__id).all()]
+            
+            if not recipe_ids:
+                return []
+            
+            # Randomly select up to limit IDs
+            import random
+            selected_ids = random.sample(recipe_ids, k=min(limit, len(recipe_ids)))
+            
+            # Now query only the selected recipes (much faster!)
+            recipes = scm.session.query(Recipe).filter(Recipe._Recipe__id.in_(selected_ids)).all()
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
+
+    def get_recipes_paginated(self, page: int, per_page: int) -> List[Recipe]:
+
+        """
+        Get recipes with pagination using SQL OFFSET/LIMIT
+
+        Only loads the specific page of recipes from the database, instead of all recipes. 
+        Uses bulk loading to efficiently populate related data
+
+        Args:
+            page: Page number (1-based, e.g., page 1 = first 9 recipes)
+            per_page: Number of recipes per page (e.g., 9 for browse page)
+            
+        Returns:
+            List of Recipe objects for the specified page only, with all related data loaded
+        """
+        offset = (page - 1) * per_page
+        with self._session_cm as scm:
+            recipes = scm.session.query(Recipe).offset(offset).limit(per_page).all()
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
+
+    def get_recipes_by_name_paginated(self, name: str, page: int, per_page: int) -> List[Recipe]:
+        """Search recipes by name with pagination - filters at database level"""
+        offset = (page - 1) * per_page
+        with self._session_cm as scm:
+            if name:
+                recipes = scm.session.query(Recipe).filter(
+                    Recipe._Recipe__name.ilike(f'%{name}%')
+                ).offset(offset).limit(per_page).all()
+            else:
+                recipes = scm.session.query(Recipe).offset(offset).limit(per_page).all()
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
+
+    def count_recipes(self) -> int:
+        """Count total recipes in database using SQL COUNT"""
+        with self._session_cm as scm:
+            return scm.session.query(Recipe).count()
+
+    def count_recipes_by_name(self, name: str) -> int:
+        """Count recipes matching name using SQL COUNT with WHERE clause"""
+        with self._session_cm as scm:
+            if name:
+                return scm.session.query(Recipe).filter(
+                    Recipe._Recipe__name.ilike(f'%{name}%')
+                ).count()
+            else:
+                return scm.session.query(Recipe).count()
+
     def get_recipes_by_id(self, id_list: List[int]) -> List[Recipe]:
         if not id_list:
             return []

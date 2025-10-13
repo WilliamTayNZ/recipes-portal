@@ -60,6 +60,31 @@ class MemoryRepository(AbstractRepository):
     def get_recipes(self) -> List[Recipe]:
         return list(self.__recipes)
 
+    def get_featured_recipes(self, limit: int = 6) -> List[Recipe]:
+        import random
+        return random.sample(self.__recipes, k=min(limit, len(self.__recipes))) if self.__recipes else []
+
+    def get_recipes_paginated(self, page: int, per_page: int) -> List[Recipe]:
+        """Get a page of recipes using list slicing"""
+        start = (page - 1) * per_page
+        end = start + per_page
+        return self.__recipes[start:end]
+
+    def get_recipes_by_name_paginated(self, name: str, page: int, per_page: int) -> List[Recipe]:
+        """Search recipes by name with pagination - filters first, then paginates"""
+        matching_recipes = self.get_recipes_by_name(name)
+        start = (page - 1) * per_page
+        end = start + per_page
+        return matching_recipes[start:end]
+
+    def count_recipes(self) -> int:
+        """Count total recipes in memory"""
+        return len(self.__recipes)
+
+    def count_recipes_by_name(self, name: str) -> int:
+        """Count recipes matching name in memory"""
+        return len(self.get_recipes_by_name(name))
+
     def get_number_of_recipe(self):
         return len(self.__recipes)
 
