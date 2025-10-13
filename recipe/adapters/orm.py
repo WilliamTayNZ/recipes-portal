@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Integer, Float, String, DateTime, ForeignKey
+from sqlalchemy import Table, Column, Integer, Float, String, DateTime, ForeignKey, Index
 
 from sqlalchemy.orm import registry, relationship
 
@@ -29,6 +29,10 @@ recipe_table = Table('recipe', mapper_registry.metadata,
                       Column('category_id', Integer, ForeignKey('category.id')),
                       Column('nutrition_id', Integer, ForeignKey('nutrition.id'), unique=True),
                       Column('author_id', Integer, ForeignKey('author.id')),
+                      Index('idx_recipe_name', 'name'),
+                      Index('idx_recipe_author_id', 'author_id'),
+                      Index('idx_recipe_category_id', 'category_id'),
+                      Index('idx_recipe_rating', 'rating')
                       )
 
 # nutrition table
@@ -50,7 +54,9 @@ recipe_image_table = Table('recipe_image', mapper_registry.metadata,
                            Column('id', Integer, primary_key=True, autoincrement=True),
                            Column('recipe_id', Integer, ForeignKey('recipe.id')),
                            Column('image_url', String(255), nullable=False),
-                           Column('position', Integer, nullable=False)
+                           Column('position', Integer, nullable=False),
+                           Index('idx_recipe_image_recipe_id', 'recipe_id'),
+                           Index('idx_recipe_image_position', 'recipe_id', 'position')
                            )
 
 # recipe instruction table
@@ -58,7 +64,9 @@ recipe_instruction_table = Table('recipe_instruction', mapper_registry.metadata,
                                  Column('id', Integer, primary_key=True, autoincrement=True),
                                  Column('recipe_id', Integer, ForeignKey('recipe.id')),
                                  Column('instruction', String(255)),
-                                 Column('position', Integer, nullable=False)
+                                 Column('position', Integer, nullable=False),
+                                 Index('idx_recipe_instruction_recipe_id', 'recipe_id'),
+                                 Index('idx_recipe_instruction_position', 'recipe_id', 'position')
                                  )
 
 # recipe ingredient table
@@ -67,7 +75,9 @@ recipe_ingredient_table = Table('recipe_ingredient', mapper_registry.metadata,
                                 Column('recipe_id', Integer, ForeignKey('recipe.id')),
                                 Column('ingredient', String(255), nullable=False),
                                 Column('ingredient_quantity', String(255)),
-                                Column('position', Integer, nullable=False)
+                                Column('position', Integer, nullable=False),
+                                Index('idx_recipe_ingredient_recipe_id', 'recipe_id'),
+                                Index('idx_recipe_ingredient_position', 'recipe_id', 'position')
                                 )
 
 # author table

@@ -161,8 +161,7 @@ class SqlAlchemyRepository(AbstractRepository):
             recipes = scm.session.query(Recipe).join(Author).filter(
                 Author._Author__name.ilike(f"%{author_name}%")
             ).all()
-            for recipe in recipes:
-                self._populate_recipe_data(recipe)
+            self._bulk_populate_recipes(recipes, scm.session)
             return recipes
 
     # ====================
@@ -186,8 +185,7 @@ class SqlAlchemyRepository(AbstractRepository):
             recipes = scm.session.query(Recipe).join(Category).filter(
                 Category._Category__name == category_name
             ).all()
-            for recipe in recipes:
-                self._populate_recipe_data(recipe)
+            self._bulk_populate_recipes(recipes, scm.session)
             return recipes
 
     # ====================
@@ -319,6 +317,7 @@ class SqlAlchemyRepository(AbstractRepository):
         
         recipe_ids = [recipe.id for recipe in recipes]
         
+        # Use more efficient queries with explicit column selection
         # Bulk load all images for all recipes
         recipe_images = session.query(RecipeImage).filter(
             RecipeImage._RecipeImage__recipe_id.in_(recipe_ids)
