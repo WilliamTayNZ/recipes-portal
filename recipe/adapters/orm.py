@@ -23,13 +23,13 @@ recipe_table = Table('recipe', mapper_registry.metadata,
                       Column('preparation_time', Integer),
                       Column('date', DateTime),
                       Column('description', String(255)),
-                      # Column('images', List, nullable=False),
-                      # Column('ingredient_quantities', List, nullable=False),
-                      # Column('ingredients', List, nullable=False),
+                      Column('images', List, nullable=False),
+                      Column('ingredient_quantities', List, nullable=False),
+                      Column('ingredients', List, nullable=False),
                       Column('rating', Float),
                       Column('servings', String(255)),
                       Column('recipe_yield', String(255)),
-                      # Column('instructions', List, nullable=False),
+                      Column('instructions', List, nullable=False),
                       Column('category_id', Integer, ForeignKey('category.id')),
                       Column('nutrition_id', Integer, ForeignKey('nutrition.id'), unique=True),
                       Column('author_id', Integer, ForeignKey('author.id')),
@@ -54,6 +54,7 @@ recipe_image_table = Table('recipe_image', mapper_registry.metadata,
                            Column('id', Integer, primary_key=True, autoincrement=True),
                            Column('recipe_id', Integer, ForeignKey('recipe.id')),
                            Column('image_url', String(255), nullable=False),
+                           Column('position', Integer, nullable=False)
                            )
 
 # recipe instruction table
@@ -61,6 +62,7 @@ recipe_instruction_table = Table('recipe_instruction', mapper_registry.metadata,
                                  Column('id', Integer, primary_key=True, autoincrement=True),
                                  Column('recipe_id', Integer, ForeignKey('recipe.id')),
                                  Column('instruction', String(255))
+                                 Column('position', Integer, nullable=False)
                                  )
 
 # recipe ingredient table
@@ -69,6 +71,7 @@ recipe_ingredient_table = Table('recipe_ingredient', mapper_registry.metadata,
                                 Column('recipe_id', Integer, ForeignKey('recipe.id')),
                                 Column('ingredient', String(255), nullable=False),
                                 Column('ingredient_quantity', String(255))
+                                Column('position', Integer, nullable=False)
                                 )
 
 # author table
@@ -118,13 +121,13 @@ def map_model_to_tables():
         '_Recipe__preparation_time': recipe_table.c.preparation_time,
         '_Recipe__date': recipe_table.c.date,
         '_Recipe__description': recipe_table.c.description,
-        # '_Recipe__images': recipe_table.c.images,
-        # '_Recipe__ingredient_quantities': recipe_table.c.ingredient_quantities,
-        # '_Recipe__ingredients': recipe_table.c.ingredients,
+        '_Recipe__images': recipe_table.c.images,
+        '_Recipe__ingredient_quantities': recipe_table.c.ingredient_quantities,
+        '_Recipe__ingredients': recipe_table.c.ingredients,
         '_Recipe__rating': recipe_table.c.rating,
         '_Recipe__servings': recipe_table.c.servings,
         '_Recipe__recipe_yield': recipe_table.c.recipe_yield,
-        # '_Recipe__instructions': recipe_table.c.instructions,
+        '_Recipe__instructions': recipe_table.c.instructions,
         '_Recipe__category': relationship(Category, back_populates="_Category__recipes"),
         '_Recipe__nutrition': relationship(Nutrition, back_populates="_Nutrition__recipe"),
         '_Recipe__author': relationship(Author, back_populates="_Author__recipes"),
@@ -153,6 +156,7 @@ def map_model_to_tables():
         '_RecipeImage__id': recipe_image_table.c.id,
         '_RecipeImage__recipe_id': recipe_image_table.c.recipe_id,
         '_RecipeImage__url': recipe_image_table.c.image_url,
+        '_RecipeImage__position': recipe_image_table.c.position
         # '_RecipeImage__recipe': relationship(Recipe, back_populates="_Recipe__images"),
     })
 
@@ -161,6 +165,7 @@ def map_model_to_tables():
         '_RecipeInstruction__id': recipe_instruction_table.c.id,
         '_RecipeInstruction__recipe_id': recipe_instruction_table.c.recipe_id,
         '_RecipeInstruction__step': recipe_instruction_table.c.instruction,
+        '_RecipeInstruction__position': recipe_instruction_table.c.position
         # '_RecipeInstruction__recipe': relationship(Recipe, back_populates="_Recipe__instructions"),
     })
 
@@ -170,6 +175,7 @@ def map_model_to_tables():
         '_RecipeIngredient__recipe_id': recipe_ingredient_table.c.recipe_id,
         '_RecipeIngredient__ingredient': recipe_ingredient_table.c.ingredient,
         '_RecipeIngredient__quantity': recipe_ingredient_table.c.ingredient_quantity,
+        '_RecipeIngredient__position': recipe_ingredient_table.c.position
         # '_RecipeIngredient__recipe': relationship(Recipe, back_populates="_Recipe__ingredients"),
     })
 
