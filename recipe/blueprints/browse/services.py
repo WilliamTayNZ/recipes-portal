@@ -22,6 +22,45 @@ def get_recipes_by_name(name: str, repo: AbstractRepository):
         raise NonExistentRecipeException(f"No recipes found with name containing '{name}'.")
     return recipes
 
+def get_recipes_paginated(page: int, per_page: int, repo: AbstractRepository):
+    """
+    Service function: Get recipes with pagination for browse page.
+    
+    This function provides a service layer wrapper around the repository's
+    pagination functionality, handling exceptions appropriately.
+    
+    Args:
+        page: Page number (1-based)
+        per_page: Number of recipes per page
+        repo: Repository instance (database or memory)
+        
+    Returns:
+        List of Recipe objects for the specified page
+        
+    Raises:
+        NonExistentRecipeException: If no recipes found on the requested page
+    """
+    recipes = repo.get_recipes_paginated(page, per_page)
+    if not recipes:
+        raise NonExistentRecipeException("No recipes found.")
+    return recipes
+
+def search_recipes_paginated(filter_by: str, query: str, page: int, per_page: int, repo: AbstractRepository):
+    """Search recipes with pagination and exception handling"""
+    query = query.lower()
+    recipes = repo.get_recipes_by_name_paginated(query, page, per_page)
+    if not recipes:
+        raise NonExistentRecipeException(f"No recipes found with name containing '{query}'.")
+    return recipes
+
+def count_recipes(repo: AbstractRepository):
+    """Get total recipe count"""
+    return repo.count_recipes()
+
+def count_recipes_by_name(name: str, repo: AbstractRepository):
+    """Get count of recipes matching name"""
+    return repo.count_recipes_by_name(name)
+
 def search_recipes(filter_by: str, query: str, repo: AbstractRepository):
     query = query.lower()
 

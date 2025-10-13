@@ -13,28 +13,31 @@ browse_blueprint = Blueprint('browse_bp', __name__)
 def browse():
     recipes_per_page = 9
 
-    cursor = request.args.get('cursor')
-
-    if cursor is None:
-        cursor = 0
-    else:
-        cursor = int(cursor)
-
-    end = cursor + recipes_per_page
+    # Get page number from URL parameter
+    page = request.args.get('page', 1, type=int)
+    if page < 1:
+        page = 1
 
     filter_by = request.args.get('filter_by')
     query = request.args.get('query', '').strip()
 
     try:
         if filter_by and query:
-            recipes = services.search_recipes(filter_by, query, repo.repo_instance)
+            # Use paginated search
+            recipes = services.search_recipes_paginated(filter_by, query, page, recipes_per_page, repo.repo_instance)
+            total_recipes = services.count_recipes_by_name(query, repo.repo_instance)
         else:
-            recipes = services.get_recipes_by_name("", repo.repo_instance)
+            # Use paginated browse
+            recipes = services.get_recipes_paginated(page, recipes_per_page, repo.repo_instance)
+            total_recipes = services.count_recipes(repo.repo_instance)
     except services.NonExistentRecipeException:
         recipes = []
+        total_recipes = 0
 
     services.annotate_is_favourite(recipes, repo.repo_instance)
-    page_recipes = recipes[cursor:end]
+    
+    # Calculate pagination info
+    total_pages = (total_recipes + recipes_per_page - 1) // recipes_per_page  # Ceiling division
     first_recipe_url = None
     last_recipe_url = None
     next_recipe_url = None
@@ -45,26 +48,26 @@ def browse():
     if filter_by and query:
         extra_params = f"&filter_by={filter_by}&query={query}"
 
-    if cursor > 0:
-        prev_start = max(0, cursor - recipes_per_page)
-        prev_recipe_url = f"/browse?cursor={prev_start}{extra_params}"
-        first_recipe_url = f"/browse?cursor=0{extra_params}"
+    if page > 1:
+        prev_recipe_url = f"/browse?page={page-1}{extra_params}"
+        first_recipe_url = f"/browse?page=1{extra_params}"
 
-    if end < len(recipes):
-        last_cursor = ((len(recipes) - 1) // recipes_per_page) * recipes_per_page
-        last_recipe_url = f"/browse?cursor={last_cursor}{extra_params}"
-        next_recipe_url = f"/browse?cursor={end}{extra_params}"
+    if page < total_pages:
+        next_recipe_url = f"/browse?page={page+1}{extra_params}"
+        last_recipe_url = f"/browse?page={total_pages}{extra_params}"
 
     return render_template(
         'browse.html',
-        recipes=page_recipes,
+        recipes=recipes,
         first_recipe_url=first_recipe_url,
         last_recipe_url=last_recipe_url,
         next_recipe_url=next_recipe_url,
         prev_recipe_url=prev_recipe_url,
         filter_by=filter_by,
         query=query,
-        mode="browse"
+        mode="browse",
+        current_page=page,
+        total_pages=total_pages
     )
 
 @recipes_blueprint.route('/recipe/<int:recipe_id>')

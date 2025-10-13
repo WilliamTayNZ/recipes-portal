@@ -2,9 +2,18 @@ from pathlib import Path
 
 from flask import Flask, session
 from flask_login import LoginManager
+
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.orm import sessionmaker, clear_mappers
+from sqlalchemy.pool import NullPool
+
 import recipe.adapters.repository as repo
-from recipe.adapters.memory_repository import MemoryRepository, populate
+from recipe.adapters.memory_repository import MemoryRepository
+from recipe.adapters.database_repository import SqlAlchemyRepository
+from recipe.adapters.orm import mapper_registry, map_model_to_tables
+
 from recipe.adapters.datareader.csvdatareader import CSVDataReader
+from recipe.adapters.repository_populate import populate
 
 
 def create_app(test_config=None):
@@ -17,8 +26,35 @@ def create_app(test_config=None):
         app.config.from_mapping(test_config)
         data_path = Path(app.config['TEST_DATA_PATH'])
 
-    repo.repo_instance = MemoryRepository()
-    populate(data_path, repo.repo_instance)
+    if app.config['REPOSITORY'] == 'memory':
+        repo.repo_instance = MemoryRepository()
+        populate(data_path, repo.repo_instance, database_mode=False)
+
+    elif app.config['REPOSITORY'] == 'database':
+        database_uri = app.config['SQLALCHEMY_DATABASE_URI']
+
+        database_echo = app.config['SQLALCHEMY_ECHO']
+        database_engine = create_engine(database_uri,
+                                        connect_args={"check_same_thread": False},
+                                        poolclass=NullPool,
+                                        echo=database_echo)
+
+        session_factory = sessionmaker(autocommit=False, autoflush=True, bind=database_engine)
+        repo.repo_instance = SqlAlchemyRepository(session_factory)
+
+        if app.config['TESTING'] == 'True' or len(inspect(database_engine).get_table_names()) == 0:
+            print("REPOPULATING DATABASE...")
+            clear_mappers()
+            mapper_registry.metadata.create_all(database_engine)
+            for table in reversed(mapper_registry.metadata.sorted_tables):
+                with database_engine.connect() as conn:
+                    conn.execute(table.delete())
+                    
+            map_model_to_tables()
+            populate(data_path, repo.repo_instance, database_mode=True)
+            print("REPOPULATING DATABASE...")
+        else:
+            map_model_to_tables()
 
     # Build the application - these steps require an application context.
     with app.app_context():

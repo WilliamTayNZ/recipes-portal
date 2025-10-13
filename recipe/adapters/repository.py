@@ -45,6 +45,31 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def get_featured_recipes(self, limit: int = 6) -> List[Recipe]:
+        """Return a random selection of recipes up to the specified limit"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_recipes_paginated(self, page: int, per_page: int) -> List[Recipe]:
+        """Get recipes with pagination support"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_recipes_by_name_paginated(self, name: str, page: int, per_page: int) -> List[Recipe]:
+        """Get recipes by name with pagination support"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def count_recipes(self) -> int:
+        """Get total count of recipes"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def count_recipes_by_name(self, name: str) -> int:
+        """Get total count of recipes matching name"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def get_recipes_by_id(self, id_list: List[int]) -> List[Recipe]:
         raise NotImplementedError
 

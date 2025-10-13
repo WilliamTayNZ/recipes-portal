@@ -60,6 +60,31 @@ class MemoryRepository(AbstractRepository):
     def get_recipes(self) -> List[Recipe]:
         return list(self.__recipes)
 
+    def get_featured_recipes(self, limit: int = 6) -> List[Recipe]:
+        import random
+        return random.sample(self.__recipes, k=min(limit, len(self.__recipes))) if self.__recipes else []
+
+    def get_recipes_paginated(self, page: int, per_page: int) -> List[Recipe]:
+        """Get a page of recipes using list slicing"""
+        start = (page - 1) * per_page
+        end = start + per_page
+        return self.__recipes[start:end]
+
+    def get_recipes_by_name_paginated(self, name: str, page: int, per_page: int) -> List[Recipe]:
+        """Search recipes by name with pagination - filters first, then paginates"""
+        matching_recipes = self.get_recipes_by_name(name)
+        start = (page - 1) * per_page
+        end = start + per_page
+        return matching_recipes[start:end]
+
+    def count_recipes(self) -> int:
+        """Count total recipes in memory"""
+        return len(self.__recipes)
+
+    def count_recipes_by_name(self, name: str) -> int:
+        """Count recipes matching name in memory"""
+        return len(self.get_recipes_by_name(name))
+
     def get_number_of_recipe(self):
         return len(self.__recipes)
 
@@ -234,23 +259,38 @@ def read_general_csv_file(filename: str): # Used for any csv file that is NOT re
             row = [item.strip() for item in row]
             yield row
 
+def load_recipes(data_path: Path, repo: MemoryRepository):
+    csv_path = data_path / "recipes.csv"
+    if not csv_path.exists():
+        raise RepositoryException(f"CSV file not found: {csv_path}")
+    reader = CSVDataReader(str(csv_path))
+    reader.csv_read()
+    for recipe in getattr(reader, "recipes", []):
+        try:
+            repo.add_recipe(recipe)
+        except Exception:
+            pass
+    return reader
+
+def load_authors(reader, repo: MemoryRepository):
+    authors_iter: Iterable[Author] = reader.authors.values() if isinstance(reader.authors, dict) else reader.authors
+    for author in authors_iter:
+        try:
+            repo.add_author(author)
+        except Exception:
+            pass
+
+def load_categories(reader, repo: MemoryRepository):
+    cats_iter: Iterable[Category] = reader.categories.values() if isinstance(reader.categories, dict) else reader.categories
+    for cat in cats_iter:
+        try:
+            repo.add_category(cat)
+        except Exception:
+            pass
+
 def load_users(data_path: Path, repo: MemoryRepository):
     users = dict()
-
     users_filename = str(Path(data_path) / "users.csv")
-
-    with open(users_filename, encoding='utf-8-sig') as infile:
-        reader = csv.reader(infile)
-
-        # Read first line of the the CSV file.
-        headers = next(reader)
-
-        # Read remaining rows from the CSV file.
-        for row in reader:
-            # Strip any leading/trailing white space from data read.
-            row = [item.strip() for item in row]
-            yield row
-
     for data_row in read_general_csv_file(users_filename):
         user = User(
             username=data_row[1],
@@ -260,57 +300,20 @@ def load_users(data_path: Path, repo: MemoryRepository):
         users[data_row[0]] = user
     return users
 
+def populate(data_path: Path, repo: MemoryRepository):
+    # Load recipes and related data into the repository.
+    reader = load_recipes(data_path, repo)
+    load_authors(reader, repo)
+    load_categories(reader, repo)
 
-def populate(data_path: Path, repo: AbstractRepository):
-    csv_path = data_path / "recipes.csv"
-    print(f"[populate] csv_path = {csv_path}")
-    print(f"[populate] exists?  {csv_path.exists()}")
+    # Load users into the repository.
+    users = load_users(data_path, repo)
 
-    if not csv_path.exists():
-        raise RepositoryException(f"CSV file not found: {csv_path}")
+    # If you have comments/reviews, load them here (implement load_comments if needed)
+    # load_comments(data_path, repo, users)
 
-    try:
-        reader = CSVDataReader(str(csv_path))
-        reader.csv_read()
-
-        authors_iter: Iterable[Author] = reader.authors.values() if isinstance(reader.authors,
-                                                                               dict) else reader.authors
-        for author in authors_iter:
-            try:
-                repo.add_author(author)
-            except Exception:
-                pass
-
-        cats_iter: Iterable[Category] = reader.categories.values() if isinstance(reader.categories,
-                                                                                 dict) else reader.categories
-        for cat in cats_iter:
-            try:
-                repo.add_category(cat)
-            except Exception:
-                pass
-
-        for recipe in getattr(reader, "recipes", []):
-            try:
-                repo.add_recipe(recipe)
-            except Exception:
-                pass
-
-        users = load_users(data_path, repo)
-
-        for user in users:
-            try:
-                repo.add_user(user)
-            except Exception:
-                pass
-
-        print(f"[populate] loaded {repo.get_number_of_recipe()} recipes, "
-              f"{len(getattr(repo, '_MemoryRepository__authors_by_id', {}))} authors, "
-              f"{len(getattr(repo, '_MemoryRepository__categories', {}))} categories,"
-              f"{len(getattr(repo, '_MemoryRepository__users', {}))} users",
-              )
-
-
-    except FileNotFoundError as e:
-        raise RepositoryException(f"File not found: {e}") from e
-    except Exception as e:
-        raise RepositoryException(f"Error populating repository: {e}") from e
+    print(f"[populate] loaded {repo.get_number_of_recipe()} recipes, "
+          f"{len(getattr(repo, '_MemoryRepository__authors_by_id', {}))} authors, "
+          f"{len(getattr(repo, '_MemoryRepository__categories', {}))} categories,"
+          f"{len(getattr(repo, '_MemoryRepository__users', {}))} users",
+          )

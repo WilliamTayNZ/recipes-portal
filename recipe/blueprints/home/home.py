@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, url_for
-
+import recipe.adapters.repository as repo
 import recipe.blueprints.home.services as services
 
 home_blueprint = Blueprint('home_bp', __name__)
