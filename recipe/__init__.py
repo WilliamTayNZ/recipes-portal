@@ -12,8 +12,8 @@ from recipe.adapters.memory_repository import MemoryRepository
 from recipe.adapters.database_repository import SqlAlchemyRepository
 from recipe.adapters.orm import mapper_registry, map_model_to_tables
 
-from recipe.adapters.memory_repository import populate
 from recipe.adapters.datareader.csvdatareader import CSVDataReader
+from recipe.adapters.repository_populate import populate
 
 
 def create_app(test_config=None):
@@ -28,7 +28,8 @@ def create_app(test_config=None):
 
     if app.config['REPOSITORY'] == 'memory':
         repo.repo_instance = MemoryRepository()
-        populate(data_path, repo.repo_instance)
+        populate(data_path, repo.repo_instance, database_mode=False)
+
     elif app.config['REPOSITORY'] == 'database':
         database_uri = app.config['SQLALCHEMY_DATABASE_URI']
 
@@ -50,7 +51,7 @@ def create_app(test_config=None):
                     conn.execute(table.delete())
                     
             map_model_to_tables()
-            populate(data_path, repo.repo_instance)
+            populate(data_path, repo.repo_instance, database_mode=True)
             print("REPOPULATING DATABASE...")
         else:
             map_model_to_tables()

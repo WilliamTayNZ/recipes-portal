@@ -4,6 +4,7 @@ from sqlalchemy import desc, asc
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import scoped_session
 
+
 from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
 from recipe.domainmodel.favourite import Favourite
@@ -69,6 +70,23 @@ class SqlAlchemyRepository(AbstractRepository):
     def add_recipe(self, recipe: Recipe):
         with self._session_cm as scm:
             scm.session.add(recipe)
+            scm.commit()
+            
+            # Create and save individual RecipeImage objects
+            for position, image_url in enumerate(recipe.images, 1):
+                recipe_image = RecipeImage(recipe.id, image_url, position)
+                scm.session.add(recipe_image)
+            
+            # Create and save individual RecipeIngredient objects
+            for position, (quantity, ingredient) in enumerate(zip(recipe.ingredient_quantities, recipe.ingredients), 1):
+                recipe_ingredient = RecipeIngredient(recipe.id, quantity, ingredient, position)
+                scm.session.add(recipe_ingredient)
+            
+            # Create and save individual RecipeInstruction objects
+            for position, instruction in enumerate(recipe.instructions, 1):
+                recipe_instruction = RecipeInstruction(recipe.id, instruction, position)
+                scm.session.add(recipe_instruction)
+            
             scm.commit()
 
     def get_recipe_by_id(self, recipe_id: int) -> Recipe:
@@ -280,8 +298,19 @@ class SqlAlchemyRepository(AbstractRepository):
         if recipe is None:
             return
 
+        # Query individual objects from their tables and populate Recipe lists
         recipe_images = session.query(RecipeImage).filter(
             RecipeImage._RecipeImage__recipe_id == recipe.id
-        ).all()
-        if recipe_images:
-            recipe._Recipe__images = [img.url for img in recipe_images]
+        ).order_by(RecipeImage._RecipeImage__position).all()
+        recipe._Recipe__images = [img.url for img in recipe_images]
+
+        recipe_ingredients = session.query(RecipeIngredient).filter(
+            RecipeIngredient._RecipeIngredient__recipe_id == recipe.id
+        ).order_by(RecipeIngredient._RecipeIngredient__position).all()
+        recipe._Recipe__ingredients = [ing.ingredient for ing in recipe_ingredients]
+        recipe._Recipe__ingredient_quantities = [ing.quantity for ing in recipe_ingredients]
+
+        recipe_instructions = session.query(RecipeInstruction).filter(
+            RecipeInstruction._RecipeInstruction__recipe_id == recipe.id
+        ).order_by(RecipeInstruction._RecipeInstruction__position).all()
+        recipe._Recipe__instructions = [inst.step for inst in recipe_instructions]
