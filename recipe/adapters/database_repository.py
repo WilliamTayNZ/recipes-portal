@@ -373,10 +373,13 @@ class SqlAlchemyRepository(AbstractRepository):
         if not user:
             return []
         with self._session_cm as scm:
-            favourites = scm.session.query(Favourite).filter(
+            recipes = scm.session.query(Recipe).join(
+                Favourite, Favourite._Favourite__recipe_id == Recipe._Recipe__id
+            ).filter(
                 Favourite._Favourite__user_id == user.id
             ).all()
-            return [fav.recipe for fav in favourites if fav.recipe is not None]
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
 
     def is_recipe_in_favourites(self, username: str, recipe_id: int) -> bool:
         user = self.get_user(username)
