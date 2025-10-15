@@ -15,17 +15,24 @@
 }
 
 .formwrapper .title {
-    text-transform: uppercase;
     font-size: 48px;
     color: #333;
     margin-bottom: 10px;
     letter-spacing: 1px;
     font-weight: normal;
+    text-align: center;
+    width: auto; 
+    padding: 0;
 }
 
 .formwrapper p {
     color: #666;
-    margin-bottom: 40px;
+    text-align: center;  
+    width: auto;             /* undo main.css width */
+    padding: 0;              /* undo main.css vertical padding */
+    margin: 0 auto 40px;     
+    max-width: 36ch;         
+    line-height: 1.5;  
 }
 
 .form-field {
@@ -52,20 +59,34 @@
 input[type="submit"] {
     width: 100%;
     padding: 15px;
-    background-color: #9AB8A7;
-    color: white;
+    background-color: #cfd7d1;
+    opacity: .7;
     border: none;
     border-radius: 4px;
     font-size: 16px;
     text-transform: uppercase;
-    cursor: pointer;
     letter-spacing: 1px;
     margin-top: 10px;
+    transition: background-color .25s, opacity .25s;
 }
 
-input[type="submit"]:hover {
-    background-color: #8AA797;
+/* Submit button is ACTIVE when both user_name and password fields are valid (required) */
+form:has([name="user_name"]:valid):has([name="password"]:valid) input[type="submit"] {
+  background: #9AB8A7;   
+  opacity: 1;
+  cursor: pointer;
 }
+
+/* ACTIVE hover */
+form:has([name="user_name"]:valid):has([name="password"]:valid) input[type="submit"]:hover {
+  background: #8AA797;
+}
+
+/* Block click when not ACTIVE */
+form:not(:has([name="user_name"]:valid):has([name="password"]:valid)) input[type="submit"] {
+  pointer-events: none;
+}
+
 
 .errors {
     list-style: none;
