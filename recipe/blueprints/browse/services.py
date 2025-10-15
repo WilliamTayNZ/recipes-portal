@@ -48,10 +48,96 @@ def get_recipes_paginated(page: int, per_page: int, repo: AbstractRepository):
 def search_recipes_paginated(filter_by: str, query: str, page: int, per_page: int, repo: AbstractRepository):
     """Search recipes with pagination and exception handling"""
     query = query.lower()
-    recipes = repo.get_recipes_by_name_paginated(query, page, per_page)
+
+    # Choose repository call based on filter
+    recipes = []
+    try:
+        if filter_by == 'name':
+            if hasattr(repo, 'get_recipes_by_name_paginated'):
+                recipes = repo.get_recipes_by_name_paginated(query, page, per_page)
+            else:
+                all_matches = repo.get_recipes_by_name(query)
+                start = (page - 1) * per_page
+                end = start + per_page
+                recipes = all_matches[start:end]
+        elif filter_by == 'author':
+            # Prefer repo paginated search when available
+            if hasattr(repo, 'get_recipes_by_author_name_paginated'):
+                recipes = repo.get_recipes_by_author_name_paginated(query, page, per_page)
+            else:
+                # Repo-agnostic fallback: filter all recipes by author substring (case-insensitive)
+                all_recipes = repo.get_recipes()
+                matches = [r for r in all_recipes if query in ((getattr(getattr(r, 'author', None), 'name', '') or '').lower())]
+                start = (page - 1) * per_page
+                end = start + per_page
+                recipes = matches[start:end]
+        elif filter_by == 'category':
+            if hasattr(repo, 'get_recipes_by_category_name_paginated'):
+                recipes = repo.get_recipes_by_category_name_paginated(query, page, per_page)
+            else:
+                # Repo-agnostic fallback: filter all recipes by category substring (case-insensitive)
+                all_recipes = repo.get_recipes()
+                matches = [r for r in all_recipes if query in ((getattr(getattr(r, 'category', None), 'name', '') or '').lower())]
+                start = (page - 1) * per_page
+                end = start + per_page
+                recipes = matches[start:end]
+        elif filter_by == 'ingredient':
+            # Prefer DB paginated ingredient search if available
+            if hasattr(repo, 'get_recipes_by_ingredient_name_paginated'):
+                recipes = repo.get_recipes_by_ingredient_name_paginated(query, page, per_page)
+            else:
+                # Fallback: filter all recipes by ingredient substring (case-insensitive)
+                all_recipes = repo.get_recipes()
+                def _has_ing(r):
+                    ings = getattr(r, 'ingredients', []) or []
+                    return any(query in ((ing or '').lower()) for ing in ings)
+                matches = [r for r in all_recipes if _has_ing(r)]
+                start = (page - 1) * per_page
+                end = start + per_page
+                recipes = matches[start:end]
+        else:
+            # default to name search
+            recipes = repo.get_recipes_by_name_paginated(query, page, per_page)
+    except Exception:
+        recipes = []
+
     if not recipes:
-        raise NonExistentRecipeException(f"No recipes found with name containing '{query}'.")
+        raise NonExistentRecipeException(f"No recipes found for {filter_by} containing '{query}'.")
     return recipes
+
+
+def count_search_results(filter_by: str, query: str, repo: AbstractRepository) -> int:
+    """Count matching recipes for a given filter and query.
+
+    This will use repository-specific fast count methods when available (e.g. count_recipes_by_name),
+    otherwise it falls back to loading matches and counting them.
+    """
+    query = (query or "").lower()
+    try:
+        if filter_by == 'name' and hasattr(repo, 'count_recipes_by_name'):
+            return repo.count_recipes_by_name(query)
+        elif filter_by == 'author' and hasattr(repo, 'count_recipes_by_author_name'):
+            return repo.count_recipes_by_author_name(query)
+        elif filter_by == 'category' and hasattr(repo, 'count_recipes_by_category_name'):
+            return repo.count_recipes_by_category_name(query)
+        elif filter_by == 'ingredient' and hasattr(repo, 'count_recipes_by_ingredient_name'):
+            return repo.count_recipes_by_ingredient_name(query)
+        else:
+            # Fallback: compute via in-Python filtering over all recipes
+            all_recipes = repo.get_recipes()
+            if filter_by == 'name':
+                matches = [r for r in all_recipes if query in ((getattr(r, 'name', '') or '').lower())]
+            elif filter_by == 'author':
+                matches = [r for r in all_recipes if query in ((getattr(getattr(r, 'author', None), 'name', '') or '').lower())]
+            elif filter_by == 'category':
+                matches = [r for r in all_recipes if query in ((getattr(getattr(r, 'category', None), 'name', '') or '').lower())]
+            elif filter_by == 'ingredient':
+                matches = [r for r in all_recipes if any(query in ((ing or '').lower()) for ing in (getattr(r, 'ingredients', []) or []))]
+            else:
+                matches = [r for r in all_recipes if query in ((getattr(r, 'name', '') or '').lower())]
+            return len(matches)
+    except Exception:
+        return 0
 
 def count_recipes(repo: AbstractRepository):
     """Get total recipe count"""
@@ -65,7 +151,7 @@ def search_recipes(filter_by: str, query: str, repo: AbstractRepository):
     query = query.lower()
 
     # Use existing function to get all recipes by passing empty string
-    all_recipes = get_recipes_by_name("", repo)
+    all_recipes = repo.get_recipes()
 
     filtered = []
 
