@@ -233,6 +233,22 @@ class SqlAlchemyRepository(AbstractRepository):
             self._bulk_populate_recipes(recipes, scm.session)
             return recipes
 
+    def get_recipes_by_author_name_paginated(self, author_name: str, page: int, per_page: int) -> List[Recipe]:
+        """Search recipes by author name with pagination (case-insensitive, partial)."""
+        offset = (page - 1) * per_page
+        with self._session_cm as scm:
+            recipes = scm.session.query(Recipe).join(Author).filter(
+                Author._Author__name.ilike(f"%{author_name}%")
+            ).offset(offset).limit(per_page).all()
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
+
+    def count_recipes_by_author_name(self, author_name: str) -> int:
+        with self._session_cm as scm:
+            return scm.session.query(Recipe).join(Author).filter(
+                Author._Author__name.ilike(f"%{author_name}%")
+            ).count()
+
     # ====================
     # Category Methods
     # ====================
@@ -252,10 +268,55 @@ class SqlAlchemyRepository(AbstractRepository):
     def get_recipes_by_category_name(self, category_name: str) -> List[Recipe]:
         with self._session_cm as scm:
             recipes = scm.session.query(Recipe).join(Category).filter(
-                Category._Category__name == category_name
+                Category._Category__name.ilike(f"%{category_name}%")
             ).all()
             self._bulk_populate_recipes(recipes, scm.session)
             return recipes
+
+    def get_recipes_by_category_name_paginated(self, category_name: str, page: int, per_page: int) -> List[Recipe]:
+        """Search recipes by category name with pagination (case-insensitive, partial)."""
+        offset = (page - 1) * per_page
+        with self._session_cm as scm:
+            recipes = scm.session.query(Recipe).join(Category).filter(
+                Category._Category__name.ilike(f"%{category_name}%")
+            ).offset(offset).limit(per_page).all()
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
+
+    def count_recipes_by_category_name(self, category_name: str) -> int:
+        with self._session_cm as scm:
+            return scm.session.query(Recipe).join(Category).filter(
+                Category._Category__name.ilike(f"%{category_name}%")
+            ).count()
+
+    # ====================
+    # Ingredient Methods
+    # ====================
+
+    def get_recipes_by_ingredient_name(self, ingredient_text: str) -> List[Recipe]:
+        """Search recipes by ingredient substring (case-insensitive)."""
+        with self._session_cm as scm:
+            recipes = scm.session.query(Recipe).join(RecipeIngredient).filter(
+                RecipeIngredient._RecipeIngredient__ingredient.ilike(f"%{ingredient_text}%")
+            ).all()
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
+
+    def get_recipes_by_ingredient_name_paginated(self, ingredient_text: str, page: int, per_page: int) -> List[Recipe]:
+        """Search recipes by ingredient with pagination (case-insensitive, partial)."""
+        offset = (page - 1) * per_page
+        with self._session_cm as scm:
+            recipes = scm.session.query(Recipe).join(RecipeIngredient).filter(
+                RecipeIngredient._RecipeIngredient__ingredient.ilike(f"%{ingredient_text}%")
+            ).offset(offset).limit(per_page).all()
+            self._bulk_populate_recipes(recipes, scm.session)
+            return recipes
+
+    def count_recipes_by_ingredient_name(self, ingredient_text: str) -> int:
+        with self._session_cm as scm:
+            return scm.session.query(Recipe).join(RecipeIngredient).filter(
+                RecipeIngredient._RecipeIngredient__ingredient.ilike(f"%{ingredient_text}%")
+            ).count()
 
     # ====================
     # Review Methods

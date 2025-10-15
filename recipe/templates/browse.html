@@ -32,7 +32,7 @@
                 {% if session.get('user_name') %}
                     <form method="POST" action="{{ url_for('browse_bp.toggle_favourite_recipe', recipe_id=recipe.id) }}" class="card-fav-form">
                         {# prefer an explicit 'next' path so server can redirect back exactly where we are #}
-                        <input type="hidden" name="next" value="{{ request.full_path }}#card-{{ recipe.id }}" />
+                        <input type="hidden" name="next" value="{{ request.full_path }}" />
                         <button type="submit" class="card-fav-btn{% if recipe.is_favourite %} favourited{% endif %}" aria-label="Toggle favourite" data-card-id="card-{{ recipe.id }}">
                             <span class="heart-icon">{{ '♥' if recipe.is_favourite else '♡' }}</span>
                         </button>

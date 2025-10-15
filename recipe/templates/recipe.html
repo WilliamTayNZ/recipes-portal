@@ -57,7 +57,7 @@
 
                     {# Add rectangular favourite button (server-side form) on the right of the back-link #}
                     {% if session.get('user_name') %}
-                        <form method="POST" action="{{ url_for('browse_bp.toggle_favourite_recipe', recipe_id=recipe.id) }}" class="favourite-form">
+                        <form method="POST" action="{{ url_for('browse_bp.toggle_favourite_recipe', recipe_id=recipe.id) }}" class="favourite-form" id="favourite-form-{{ recipe.id }}">
                             <input type="hidden" name="next" value="{{ request.full_path }}" />
                             <button type="submit" class="favourite-btn{% if recipe.is_favourite %} favourited{% endif %}">
                                 <span class="heart-icon">{% if recipe.is_favourite %}♥{% else %}♡{% endif %}</span>

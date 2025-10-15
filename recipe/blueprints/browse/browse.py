@@ -1,8 +1,6 @@
-from flask import Flask, render_template, Blueprint, request, jsonify, session, redirect, url_for
-from flask_login import login_required, current_user
+from flask import render_template, Blueprint, request, redirect, url_for
+from flask_login import login_required
 import recipe.blueprints.browse.services as services
-from recipe.domainmodel.recipe import Recipe
-from recipe.domainmodel.author import Author
 
 import recipe.adapters.repository as repo
 
@@ -25,7 +23,8 @@ def browse():
         if filter_by and query:
             # Use paginated search
             recipes = services.search_recipes_paginated(filter_by, query, page, recipes_per_page, repo.repo_instance)
-            total_recipes = services.count_recipes_by_name(query, repo.repo_instance)
+            # Use new count helper that handles name/author/category
+            total_recipes = services.count_search_results(filter_by, query, repo.repo_instance)
         else:
             # Use paginated browse
             recipes = services.get_recipes_paginated(page, recipes_per_page, repo.repo_instance)
