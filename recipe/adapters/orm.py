@@ -15,6 +15,9 @@ from recipe.domainmodel.recipe_ingredient import RecipeIngredient
 
 mapper_registry = registry()
 
+# Guard to ensure mappings are only configured once per process
+_mappings_configured = False
+
 # recipe table
 recipe_table = Table('recipe', mapper_registry.metadata,
                       Column('id', Integer, primary_key=True, autoincrement=True),
@@ -119,6 +122,9 @@ review_table = Table('review', mapper_registry.metadata,
 
 # ORM mappings
 def map_model_to_tables():
+    global _mappings_configured
+    if _mappings_configured:
+        return
     # recipe mapping
     mapper_registry.map_imperatively(Recipe, recipe_table, properties={
         '_Recipe__id': recipe_table.c.id,
@@ -135,7 +141,7 @@ def map_model_to_tables():
         '_Recipe__author': relationship(Author, back_populates="_Author__recipes"),
         # '_Recipe__images': relationship(RecipeImage, back_populates="_Images__recipe"),
         # '_Recipe__instructions': relationship(RecipeInstruction, back_populates="_RecipeInstruction__recipe"),
-        # '_Recipe__ingredients': relationship(RecipeIngredient, back_populates="_Ingredient__recipe"),
+        # '_Recipe__ingredients': relationship(RecipeIngredient, back_populates="_Recipe__ingredients"),
     })
 
     # nutrition mapping
@@ -222,3 +228,5 @@ def map_model_to_tables():
         '_Review__review_comment': review_table.c.review_comment,
         '_Review__date': review_table.c.date
     })
+
+    _mappings_configured = True

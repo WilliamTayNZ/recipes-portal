@@ -180,7 +180,9 @@ def search_recipes(filter_by: str, query: str, repo: AbstractRepository):
 def _require_user():
     if not getattr(current_user, 'is_authenticated', False):
         raise UnknownUserException("User must be logged in")
-    return current_user
+    # Unwrap AuthUserAdapter (used by flask-login in this app) to a domain User instance
+    domain_user = getattr(current_user, '_user', None)
+    return domain_user if domain_user is not None else current_user
 
 
 def _current_user_identifier() -> str:
@@ -190,23 +192,30 @@ def _current_user_identifier() -> str:
 
 
 def annotate_is_favourite(recipes: List[Recipe], repo: AbstractRepository) -> None:
+    """Mark each recipe with is_favourite using repository checks so DB and memory are consistent."""
     if not getattr(current_user, 'is_authenticated', False):
         for r in recipes:
             setattr(r, 'is_favourite', False)
         return
-    user = current_user
-    fav_recipe_ids = {
-        getattr(getattr(fav, 'recipe', None), 'id', None)
-        for fav in getattr(user, 'favourite_recipes', [])
-    }
+
+    # Use username string for status checks
+    username = getattr(getattr(current_user, '_user', current_user), 'username', None)
     for r in recipes:
         rid = getattr(r, 'id', None)
-        setattr(r, 'is_favourite', rid in fav_recipe_ids)
+        try:
+            is_fav = repo.is_recipe_in_favourites(username, rid) if (username and rid is not None) else False
+        except Exception:
+            is_fav = False
+        setattr(r, 'is_favourite', is_fav)
 
 
 def get_favourites(repo: AbstractRepository) -> List[Recipe]:
+    """Return favourite Recipe objects using repository API (works for DB and memory)."""
     user = _require_user()
-    recipes = [getattr(fav, 'recipe') for fav in getattr(user, 'favourite_recipes', [])]
+    username = getattr(user, 'username', None)
+    if not username:
+        raise UnknownUserException("User must have a username")
+    recipes = repo.get_user_favourites(username)
     recipes = [r for r in recipes if r is not None]
     if not recipes:
         raise NonExistentRecipeException("No favourites yet.")
@@ -256,7 +265,9 @@ def toggle_favourite(recipe_id: int, repo: AbstractRepository) -> bool:
         return False
 
     try:
-        if repo.is_recipe_in_favourites(user.username, recipe_id):
+        # For status checks, use username string; for mutations, pass the unwrapped domain user
+        username = getattr(user, 'username', None)
+        if repo.is_recipe_in_favourites(username, recipe_id):
             repo.remove_favourite(user, recipe)
             return False
         else:
