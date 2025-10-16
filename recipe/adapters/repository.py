@@ -101,6 +101,16 @@ class AbstractRepository(abc.ABC):
     def get_recipes_by_name(self, name: str) -> List[Recipe]:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def add_user(self, user: User):
+        """Add a user to the repository"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_user(self, username: str) -> User:
+        """Get a user by username"""
+        raise NotImplementedError
+
     @abc.abstractmethod    
     def add_review(self, review: Review):
         """Add a review to a recipe"""
