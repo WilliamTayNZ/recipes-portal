@@ -15,9 +15,6 @@ from recipe.domainmodel.recipe_ingredient import RecipeIngredient
 
 mapper_registry = registry()
 
-# Guard to ensure mappings are only configured once per process
-_mappings_configured = False
-
 # recipe table
 recipe_table = Table('recipe', mapper_registry.metadata,
                       Column('id', Integer, primary_key=True, autoincrement=True),
@@ -122,9 +119,10 @@ review_table = Table('review', mapper_registry.metadata,
 
 # ORM mappings
 def map_model_to_tables():
-    global _mappings_configured
-    if _mappings_configured:
+    # Only map if no mappers are currently configured.
+    if list(mapper_registry.mappers):
         return
+
     # recipe mapping
     mapper_registry.map_imperatively(Recipe, recipe_table, properties={
         '_Recipe__id': recipe_table.c.id,
@@ -139,9 +137,6 @@ def map_model_to_tables():
         '_Recipe__category': relationship(Category, back_populates="_Category__recipes"),
         '_Recipe__nutrition': relationship(Nutrition, back_populates="_Nutrition__recipe"),
         '_Recipe__author': relationship(Author, back_populates="_Author__recipes"),
-        # '_Recipe__images': relationship(RecipeImage, back_populates="_Images__recipe"),
-        # '_Recipe__instructions': relationship(RecipeInstruction, back_populates="_RecipeInstruction__recipe"),
-        # '_Recipe__ingredients': relationship(RecipeIngredient, back_populates="_Recipe__ingredients"),
     })
 
     # nutrition mapping
@@ -165,7 +160,6 @@ def map_model_to_tables():
         '_RecipeImage__recipe_id': recipe_image_table.c.recipe_id,
         '_RecipeImage__url': recipe_image_table.c.image_url,
         '_RecipeImage__position': recipe_image_table.c.position
-        # '_RecipeImage__recipe': relationship(Recipe, back_populates="_Recipe__images"),
     })
 
     # recipe instruction mapping
@@ -174,7 +168,6 @@ def map_model_to_tables():
         '_RecipeInstruction__recipe_id': recipe_instruction_table.c.recipe_id,
         '_RecipeInstruction__step': recipe_instruction_table.c.instruction,
         '_RecipeInstruction__position': recipe_instruction_table.c.position
-        # '_RecipeInstruction__recipe': relationship(Recipe, back_populates="_Recipe__instructions"),
     })
 
     # recipe ingredient mapping
@@ -184,7 +177,6 @@ def map_model_to_tables():
         '_RecipeIngredient__ingredient': recipe_ingredient_table.c.ingredient,
         '_RecipeIngredient__quantity': recipe_ingredient_table.c.ingredient_quantity,
         '_RecipeIngredient__position': recipe_ingredient_table.c.position
-        # '_RecipeIngredient__recipe': relationship(Recipe, back_populates="_Recipe__ingredients"),
     })
 
     # author mapping
@@ -221,12 +213,9 @@ def map_model_to_tables():
     # review mapping
     mapper_registry.map_imperatively(Review, review_table, properties={
         '_Review__review_id': review_table.c.id,
-        # '_Review__user_id': review_table.c.user_id,
         '_Review__user': relationship(User, back_populates="_User__reviews"),
         '_Review__recipe_id': review_table.c.recipe_id,
         '_Review__rating': review_table.c.rating,
         '_Review__review_comment': review_table.c.review_comment,
         '_Review__date': review_table.c.date
     })
-
-    _mappings_configured = True
