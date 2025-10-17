@@ -40,5 +40,4 @@ class Author:
             raise TypeError("Expected a Recipe instance")
         if recipe not in self.__recipes:
             self.__recipes.append(recipe)
-        else:
-            raise ValueError("Recipe already exists for this author")
+        # Silently ignore duplicates - this is the expected behavior

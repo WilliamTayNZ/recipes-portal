@@ -205,8 +205,11 @@ def test_author_add_recipe(my_author, my_recipe):
 
 def test_author_add_duplicate_recipe(my_author, my_recipe):
     my_author.add_recipe(my_recipe)
-    with pytest.raises(ValueError):
-        my_author.add_recipe(my_recipe)
+    # Adding the same recipe again should be silently ignored
+    my_author.add_recipe(my_recipe)
+    # Should still only have one recipe
+    assert len(my_author.recipes) == 1
+    assert my_recipe in my_author.recipes
 
 
 # Category tests
@@ -373,3 +376,4 @@ def test_nutrition_set_protein():
     assert nutrition1.protein == 0.0
     nutrition1.protein = 20.0
     assert nutrition1.protein == 20.0
+
