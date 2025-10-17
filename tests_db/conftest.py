@@ -82,15 +82,6 @@ def empty_session():
     clear_mappers()
     engine = create_engine("sqlite://")
     map_model_to_tables()
-
-    # incoming change
-    session_factory = sessionmaker(bind=engine)
-    yield session_factory()
-    mapper_registry.metadata.drop_all(engine)
-
-
-'''CURRENT CHANGE
-
     mapper_registry.metadata.create_all(engine)
 
     with engine.begin() as conn:
@@ -102,6 +93,3 @@ def empty_session():
     session.close()
     mapper_registry.metadata.drop_all(engine)
     clear_mappers()
-
-'''
-    

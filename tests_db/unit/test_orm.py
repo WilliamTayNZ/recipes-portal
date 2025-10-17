@@ -105,7 +105,7 @@ def insert_review(empty_session, *, user_id, recipe_id, rating=5.0, text_val="Go
         created = datetime.datetime(2020, 1, 2, 8, 0, 0)
     empty_session.execute(
         text('''
-        INSERT INTO review (user_id, recipe_id, rating, review_comment, date)
+        INSERT INTO review (user_id, recipe_id, rating, review_text, date)
         VALUES (:uid, :rid, :rating, :comment, :created)
         '''),
         {"uid": user_id, "rid": recipe_id, "rating": rating, "comment": text_val, "created": created},
@@ -227,10 +227,10 @@ def test_review_links_user_and_recipe(empty_session):
     assert len(reviews) == 1
     review = reviews[0]
     assert review.user.id == user_id
-    # Access the private recipe_id attribute since there's no recipe relationship in ORM
-    assert review._Review__recipe_id == recipe_id
-    # Access the private review_comment attribute as mapped by ORM
-    assert review._Review__review_comment == "bad"
+    # Access recipe through the ORM relationship
+    assert review.recipe.id == recipe_id
+    # Access the review_text through the ORM mapped private attribute
+    assert review._Review__review_text == "bad"
 
 
 def test_recipe_instructions_relationship(empty_session):
