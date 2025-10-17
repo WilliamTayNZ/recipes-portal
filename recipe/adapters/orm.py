@@ -112,7 +112,7 @@ review_table = Table('review', mapper_registry.metadata,
                      Column('user_id', Integer, ForeignKey('user.id')),
                      Column('recipe_id', Integer, ForeignKey('recipe.id'), nullable=False),
                      Column('rating', Integer, nullable=False),
-                     Column('review_comment', String(255), nullable=False),
+                     Column('review_text', String(255), nullable=False),
                      Column('date', DateTime, nullable=False),
                      )
 
@@ -137,6 +137,7 @@ def map_model_to_tables():
         '_Recipe__category': relationship(Category, back_populates="_Category__recipes"),
         '_Recipe__nutrition': relationship(Nutrition, back_populates="_Nutrition__recipe"),
         '_Recipe__author': relationship(Author, back_populates="_Author__recipes"),
+        '_Recipe__reviews': relationship(Review, back_populates="_Review__recipe")
     })
 
     # nutrition mapping
@@ -212,10 +213,10 @@ def map_model_to_tables():
 
     # review mapping
     mapper_registry.map_imperatively(Review, review_table, properties={
-        '_Review__review_id': review_table.c.id,
+        '_Review__id': review_table.c.id,
         '_Review__user': relationship(User, back_populates="_User__reviews"),
-        '_Review__recipe_id': review_table.c.recipe_id,
+        '_Review__recipe': relationship(Recipe, back_populates="_Recipe__reviews"),
         '_Review__rating': review_table.c.rating,
-        '_Review__review_comment': review_table.c.review_comment,
+        '_Review__review_text': review_table.c.review_text,
         '_Review__date': review_table.c.date
     })

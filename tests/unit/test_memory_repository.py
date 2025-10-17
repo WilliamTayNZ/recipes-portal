@@ -6,6 +6,8 @@ from recipe.domainmodel.author import Author
 from recipe.domainmodel.category import Category
 from recipe.domainmodel.recipe import Recipe
 
+from recipe.domainmodel.user import User
+from recipe.domainmodel.review import Review
 
 # ---------- Fixtures ----------
 @pytest.fixture
@@ -166,6 +168,51 @@ def test_repository_links_recipe_with_author_and_category(in_memory_repo, recipe
 
     assert recipe_2 in author.recipes
     assert recipe_2 in category.recipes
+
+
+# ---------- Review Tests ----------
+def test_delete_review_updates_recipe_rating(in_memory_repo):
+    user1 = User('user1', 'password123')
+    user2 = User('user2', 'password456')
+    in_memory_repo.add_user(user1)
+    in_memory_repo.add_user(user2)
+
+    recipe = in_memory_repo.get_first_recipe()
+    assert recipe is not None
+    
+    # Add three reviews with different ratings
+    review1 = Review(review_id=1, user=user1, recipe=recipe, rating=5, review_text="Excellent!")
+    review2 = Review(review_id=2, user=user2, recipe=recipe, rating=3, review_text="OK")
+    review3 = Review(review_id=3, user=user1, recipe=recipe, rating=4, review_text="Good")
+    
+    in_memory_repo.add_review(review1)
+    in_memory_repo.add_review(review2)
+    in_memory_repo.add_review(review3)
+    
+    # Rating should be (5 + 3 + 4) / 3 = 4.0
+    assert recipe.rating == 4.0
+    
+    # Delete the 5-star review
+    success = in_memory_repo.delete_review(review1.id, user1.username)
+    assert success is True
+    
+    # Rating should now be (3 + 4) / 2 = 3.5
+    assert recipe.rating == 3.5
+    
+    # Delete another review
+    success = in_memory_repo.delete_review(review2.id, user2.username)
+    assert success is True
+    
+    # Rating should now be 4 / 1 = 4.0
+    assert recipe.rating == 4.0
+    
+    # Delete the last review
+    success = in_memory_repo.delete_review(review3.id, user1.username)
+    assert success is True
+    
+    # No reviews left, rating should be None
+    assert recipe.rating is None
+
 
 # python -m pytest -v tests
 # py -m pytest -v tests/unit/test_memory_repository.py

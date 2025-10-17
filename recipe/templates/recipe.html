@@ -332,6 +332,21 @@
                             <p>{{ review.review_text }}</p>
                         {% endif %}
                     </div>
+                    {% if session.get('user_name') == review.user.username %}
+                        {% if request.args.get('confirm') == review.id|string %}
+                        <div class="confirm-delete">
+                            <span>Confirm delete? </span>
+                            <form method="POST" action="{{ url_for('recipe_bp.delete_review', review_id=review.id) }}" style="display: inline;">
+                                <input type="hidden" name="recipe_id" value="{{ recipe.id }}">
+                                <button type="submit">yes</button>
+                            </form>
+                            /
+                            <a href="{{ url_for('recipe_bp.recipe', recipe_id=recipe.id) }}#reviews">no</a>
+                        </div>
+                        {% else %}
+                        <a href="{{ url_for('recipe_bp.recipe', recipe_id=recipe.id, confirm=review.id) }}#reviews" class="delete-button">Delete</a>
+                        {% endif %}
+                    {% endif %}
                 </div>
                 {% endfor %}
             {% else %}

@@ -70,7 +70,7 @@ class SqlAlchemyRepository(AbstractRepository):
     def add_recipe(self, recipe: Recipe):
         with self._session_cm as scm:
             scm.session.add(recipe)
-            scm.commit()
+            # scm.commit() shouldnt need this commit.
             
             # Create and save individual RecipeImage objects
             for position, image_url in enumerate(recipe.images, 1):
@@ -324,17 +324,36 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def add_review(self, review: Review):
         with self._session_cm as scm:
+            # Add the review to the session
+            # SQLAlchemy will automatically add it to recipe.__reviews via the ORM relationship
             scm.session.add(review)
+            
+            # Now that the review is in the recipe's reviews list (via ORM),
+            # update the rating based on all reviews (including the new one)
+            review.recipe.update_rating()
+            
+            # Commit both the review and the updated rating together
             scm.commit()
 
     def delete_review(self, review_id: int, username: str):
         with self._session_cm as scm:
             try:
                 review = scm.session.query(Review).filter(
-                    Review._Review__review_id == review_id
+                    Review._Review__id == review_id
                 ).one()
                 if review.user.username == username:
+                    # Store the recipe reference before deleting
+                    recipe = review.recipe
+                    
+                    # Delete the review from the session
+                    # SQLAlchemy will automatically remove it from recipe.__reviews via the ORM relationship
                     scm.session.delete(review)
+                    
+                    # Now that the review is removed from the recipe's reviews list (via ORM),
+                    # update the rating based on remaining reviews
+                    recipe.update_rating()
+                    
+                    # Commit both the deletion and the updated rating together
                     scm.commit()
                     return True
                 return False
