@@ -225,6 +225,14 @@ class SqlAlchemyRepository(AbstractRepository):
             ).all()
             return authors
 
+    def get_author_by_id(self, author_id: int):
+        """Get a single author by ID"""
+        with self._session_cm as scm:
+            author = scm.session.query(Author).filter(
+                Author._Author__id == author_id
+            ).first()
+            return author
+
     def get_recipes_by_author_name(self, author_name: str) -> List[Recipe]:
         with self._session_cm as scm:
             recipes = scm.session.query(Recipe).join(Author).filter(

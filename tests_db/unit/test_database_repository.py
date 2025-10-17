@@ -38,6 +38,112 @@ def test_repo_does_not_retrieve_a_non_existent_user(session_factory):
     assert user is None
 
 
+# Author tests
+def test_repo_can_add_and_retrieve_author(session_factory):
+    """Test adding an author and retrieving it by ID"""
+    repo = make_repo(session_factory)
+
+    # Create a new author with a unique ID
+    test_author_id = 999001
+    author = Author(test_author_id, "Test Chef Gordon")
+
+    repo.add_author(author)
+
+    # Retrieve the author by ID
+    retrieved_author = repo.get_author_by_id(test_author_id)
+
+    assert retrieved_author is not None
+    assert retrieved_author.id == test_author_id
+    assert retrieved_author.name == "Test Chef Gordon"
+
+
+def test_repo_cannot_add_duplicate_author_by_id(session_factory):
+    """Test that adding an author with a duplicate ID raises IntegrityError"""
+    repo = make_repo(session_factory)
+    
+    # Add first author with ID 999002
+    author1 = Author(999002, "Chef Alice")
+    repo.add_author(author1)
+    
+    # Try to add another author with the same ID
+    author2 = Author(999002, "Chef Bob")
+    
+    # Should raise IntegrityError due to primary key constraint
+    from sqlalchemy.exc import IntegrityError
+    with pytest.raises(IntegrityError):
+        repo.add_author(author2)
+
+
+def test_repo_can_add_authors_with_same_name(session_factory):
+    """Test that multiple authors can have the same name (no unique constraint on name)"""
+    repo = make_repo(session_factory)
+    
+    # Add two authors with the same name but different IDs
+    author1 = Author(999003, "Jamie Oliver")
+    author2 = Author(999004, "Jamie Oliver")
+    
+    repo.add_author(author1)
+    repo.add_author(author2)  # Should succeed - no unique constraint on name
+    
+    # Retrieve by name and verify both exist
+    authors = repo.get_authors_by_name("Jamie Oliver")
+    
+    # Should find at least these 2 (might find others if data has duplicate names)
+    assert len([a for a in authors if a.id in [999003, 999004]]) == 2
+
+
+# Category tests
+def test_repo_can_add_and_retrieve_category(session_factory):
+    """Test adding a category and retrieving it by name"""
+    repo = make_repo(session_factory)
+    
+    # Create a new category with unique name
+    category = Category(name="Test Category Fusion Cuisine", category_id=999001)
+    
+    repo.add_category(category)
+    
+    # Retrieve the category by name
+    retrieved_category = repo.get_category_by_name("Test Category Fusion Cuisine")
+    
+    assert retrieved_category is not None
+    assert retrieved_category.name == "Test Category Fusion Cuisine"
+    assert retrieved_category.id == 999001
+
+
+def test_repo_cannot_add_duplicate_category_by_name(session_factory):
+    """Test that adding a category with duplicate name raises IntegrityError"""
+    repo = make_repo(session_factory)
+    
+    # Add first category
+    category1 = Category(name="Unique Vegan Cuisine", category_id=999002)
+    repo.add_category(category1)
+    
+    # Try to add another category with the same name but different ID
+    category2 = Category(name="Unique Vegan Cuisine", category_id=999003)
+    
+    # Should raise IntegrityError due to unique constraint on name
+    from sqlalchemy.exc import IntegrityError
+    with pytest.raises(IntegrityError):
+        repo.add_category(category2)
+
+
+def test_repo_cannot_add_duplicate_category_by_id(session_factory):
+    """Test that adding a category with duplicate ID raises IntegrityError"""
+    repo = make_repo(session_factory)
+    
+    # Add first category with ID 999004
+    category1 = Category(name="Mediterranean Diet", category_id=999004)
+    repo.add_category(category1)
+    
+    # Try to add another category with the same ID but different name
+    category2 = Category(name="Asian Cuisine", category_id=999004)
+    
+    # Should raise IntegrityError due to primary key constraint
+    from sqlalchemy.exc import IntegrityError
+    with pytest.raises(IntegrityError):
+        repo.add_category(category2)
+
+
 # Recipe tests
 def test_add_and_get_recipe(session_factory):
     """Test adding and retrieving a recipe"""
@@ -744,6 +850,3 @@ def test_get_featured_recipes(session_factory):
 
 
 # py -m pytest -v tests_db/unit/test_database_repository.py
-
-
-
