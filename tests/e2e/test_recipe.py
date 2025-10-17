@@ -70,7 +70,8 @@ def test_invalid_review_submission(client, auth):
     test_cases = [
         # Empty rating
         {
-            'review': 'Great recipe!', 
+            'rating': '',
+            'review': 'Great recipe!',
             'recipe_id': '38',
             'expected_message': b'Please select a rating'
         },
@@ -84,7 +85,7 @@ def test_invalid_review_submission(client, auth):
         # Profanity in review
         {
             'rating': '1',
-            'review': 'This contains profanity',
+            'review': 'This contains profanity (shit)',
             'recipe_id': '38',
             'expected_message': b'Your review must not contain profanity'
         }

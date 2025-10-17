@@ -13,12 +13,20 @@ def test_register(client):
     response_code = client.get('/authentication/register').status_code
     assert response_code == 200
 
-    # Check that we can register a user successfully, supplying a valid user name and password.
+    # Check that we can register a user successfully, supplying a valid username and password.
+    # Use a unique username with timestamp-like suffix to avoid conflicts with pre-populated data
     response = client.post(
         '/authentication/register',
-        data={'user_name': 'gmichael', 'password': 'CarelessWhisper1984'}
+        data={
+            'user_name': 'testuser_new_12345', 
+            'password': 'CarelessWhisper1984',
+            'submit': 'Register'  # Include the submit button
+        },
+        follow_redirects=False
     )
-    assert response.headers['Location'] == '/authentication/login'
+    # The response should redirect to the login page
+    assert response.status_code == 302
+    assert '/authentication/login' in response.headers.get('Location', '')
 
 def test_login(client, auth):
     # Register user first
@@ -36,8 +44,7 @@ def test_login(client, auth):
         ('', '', b'Your user name is required'),
         ('cj', '', b'Your user name is too short'),
         ('test', '', b'Your password is required'),
-        ('test', 'test', b'Your password must be at least 8 characters, and contain an upper case letter,\
-            a lower case letter and a digit'),
+        ('test', 'test', b'Your password must be at least 8 characters, and contain an upper case letter, a lower case letter and a digit'),
         ('fmercury', 'Test#6^0', b'Your username is already taken - please supply another'),
 ))
 def test_register_with_invalid_input(client, user_name, password, message):
