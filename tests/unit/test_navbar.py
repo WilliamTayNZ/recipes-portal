@@ -1,14 +1,19 @@
 import pytest
 from recipe import create_app
 from flask import url_for
+from utils import get_project_root
+
+TEST_DATA_PATH = get_project_root() / "tests" / "data"
 
 #initialise the flask app to test
 
 @pytest.fixture
 def app():
-    app = create_app()
-    app.config.update({
-        "TESTING": True,
+    app = create_app({
+        'TESTING': True,
+        'TEST_DATA_PATH': TEST_DATA_PATH,
+        'WTF_CSRF_ENABLED': False,
+        'REPOSITORY': 'memory'
     })
     return app
 
@@ -27,7 +32,7 @@ def test_navbar(client, app):
     html = resp.data.decode()
 
     assert resp.status_code == 200
-    assert '<img src="../static/assets/logo.png"' in html
+    assert 'src="/static/assets/logo.png"' in html
     assert 'alt="noodles-logo"' in html
     assert '>HOME<' in html
     assert '>BROWSE<' in html

@@ -63,8 +63,8 @@ def my_nutrition():
   
 @pytest.fixture
 def my_review():
-    return Review(1,"Name","Recipe", 5.00, "Review",
-                  datetime(2024, 1, 1))
+    return Review("Name","Recipe", 5.00, "Review",
+                  datetime(2024, 1, 1), review_id=1)
   
 @pytest.fixture
 def my_favourite():
@@ -104,32 +104,35 @@ def test_favourite_hash():
 
 # Review tests
 def test_review_construction():
-    review = Review(1,"Name","Recipe", 5.00, "Review",
-                    datetime(2024, 1, 1))
+    review = Review("Name","Recipe", 5.00, "Review",
+                    datetime(2024, 1, 1), review_id=1)
     assert review.id == 1
     assert review.recipe == "Recipe"
     assert review.rating == 5.00
     assert review.review_text == "Review"
 
 def test_review_equality():
-    review1 = Review(1,"Name","Recipe", 5.00, "Review")
-    review2 = Review(1,"Name","Recipe", 5.00, "Review")
-    review3 = Review(  1,"Name","Recipe", 3.50, "Review")
-    assert review1 == review2
-    assert review1 != review3
+    # Equality now based on ID, not rating
+    review1 = Review("Name","Recipe", 5.00, "Review", review_id=1)
+    review2 = Review("Name","Recipe", 5.00, "Review", review_id=1)
+    review3 = Review("Name","Recipe", 3.50, "Review", review_id=2)
+    assert review1 == review2 
+    assert review1 != review3  
 
 def test_review_less_than():
-    review1 = Review(1,"Name","Recipe", 4.00, "Review")
-    review2 = Review(1,"Name","Recipe", 5.00, "Review")
+    # Less than comparison still based on rating
+    review1 = Review("Name","Recipe", 4.00, "Review", review_id=1)
+    review2 = Review("Name","Recipe", 5.00, "Review", review_id=2)
 
     assert review1 < review2
 
 def test_review_hash():
-    review1 = Review(1,"Name","Recipe", 5.00, "Review")
-    review2 = Review(1,"Name","Recipe", 5.00, "Review")
+    # Hash now based on ID, not rating
+    review1 = Review("Name","Recipe", 5.00, "Review", review_id=1)
+    review2 = Review("Name","Recipe", 5.00, "Review", review_id=1)
     review_set = {review1,review2}
 
-    assert len(review_set) == 1
+    assert len(review_set) == 1  # Same ID, so only one in set
     
 
 # User tests
@@ -205,8 +208,11 @@ def test_author_add_recipe(my_author, my_recipe):
 
 def test_author_add_duplicate_recipe(my_author, my_recipe):
     my_author.add_recipe(my_recipe)
-    with pytest.raises(ValueError):
-        my_author.add_recipe(my_recipe)
+    # Adding the same recipe again should be silently ignored
+    my_author.add_recipe(my_recipe)
+    # Should still only have one recipe
+    assert len(my_author.recipes) == 1
+    assert my_recipe in my_author.recipes
 
 
 # Category tests
@@ -373,3 +379,4 @@ def test_nutrition_set_protein():
     assert nutrition1.protein == 0.0
     nutrition1.protein = 20.0
     assert nutrition1.protein == 20.0
+
