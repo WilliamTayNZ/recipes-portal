@@ -63,3 +63,81 @@ def test_recipe_with_review(client, auth):
 
     # check rating
     assert b'3.0' in response.data
+
+
+def test_delete_review_requires_login(client):
+    response = client.post('/delete_review/1')
+    assert response.status_code == 302
+    assert '/authentication/login' in response.headers['Location']
+
+
+def test_user_can_delete_their_own_review(client, auth):
+    client.post(
+        '/authentication/register',
+        data={'user_name': 'testuser', 'password': 'Password123'}
+    )
+    auth.login(user_name='testuser', password='Password123')
+    
+    # Post a review
+    client.post('/recipe/38/review',
+                data={'rating': '5', 'review': 'great recipe!'})
+    
+    # Verify review exists
+    response = client.get('/recipe/38')
+    assert b'great recipe!' in response.data
+    
+    # Delete the review (assuming review ID is 1)
+    response = client.post('/delete_review/1',
+                          data={'recipe_id': '38'})
+    
+    # Verify the redirect back to recipe page
+    assert response.status_code == 302
+    
+
+def test_user_cannot_delete_other_users_review(client, auth):
+
+    # Register and login as first user
+    client.post(
+        '/authentication/register',
+        data={'user_name': 'user1', 'password': 'Password123'}
+    )
+    auth.login(user_name='user1', password='Password123')
+    
+    # Post a review
+    client.post('/recipe/38/review',
+                data={'rating': '5', 'review': 'user1 review'})
+    
+    auth.logout()
+    
+    # Register and login as second user
+    client.post(
+        '/authentication/register',
+        data={'user_name': 'user2', 'password': 'Password123'}
+    )
+    auth.login(user_name='user2', password='Password123')
+    
+    # Try to delete first user's review (assuming review ID is 1)
+    response = client.post('/delete_review/1',
+                          data={'recipe_id': '38'})
+    
+    # Should get 403 Forbidden
+    assert response.status_code == 403
+
+
+def test_delete_nonexistent_review(client, auth):
+
+    # Register and login
+    client.post(
+        '/authentication/register',
+        data={'user_name': 'testuser', 'password': 'Password123'}
+    )
+    auth.login(user_name='testuser', password='Password123')
+    
+    # Try to delete non-existent review
+    response = client.post('/delete_review/999999',
+                          data={'recipe_id': '38'})
+    
+    # Should get 403 Forbidden
+    assert response.status_code == 403
+
+# py -m pytest -v tests/e2e/test_review.py

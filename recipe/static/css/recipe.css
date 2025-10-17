@@ -643,6 +643,54 @@ nav img {
     font-style: italic;
 }
 
+.review-card {
+    position: relative;
+    padding-bottom: 25px;
+}
+
+.delete-button {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: #dc3545;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.delete-button:hover {
+    font-weight: 600;
+}
+
+.confirm-delete {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: #dc3545;
+    font-size: 0.9em;
+}
+
+.confirm-delete span {
+    margin-right: 2px;
+    font-weight: 600;
+}
+
+.confirm-delete button, .confirm-delete a {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin: 0 2px;
+    padding: 0;
+    display: inline;
+}
+
+.confirm-delete button:hover, .confirm-delete a:hover {
+    text-decoration: underline;
+}
+
 .error-message {
     color: #dc3545;
     font-size: 0.875rem;
