@@ -189,21 +189,31 @@ class MemoryRepository(AbstractRepository):
         if recipe is None:
             raise RepositoryException("Recipe not found")
             
-        # Add the review to the recipe
         recipe.add_review(review)
+        review.user.add_review(review)
+        self.__reviews[review.id] = review
+        
         print("Added a review successfully")
 
     def delete_review(self, review_id: int, username: str):
-        """Delete a review if it belongs to the specified user"""
-        recipe = self.get_recipe_by_id(review_id)
-        if recipe is None:
+        review = self.__reviews.get(review_id)
+
+        if review is None:
             return False
+
+        # Check that the user created this review
+        if review.user.username != username:
+            return False
+
+        recipe = review.recipe
+        user = review.user
             
-        for review in recipe.reviews:
-            if review.reviewer_username == username:
-                recipe.reviews.remove(review)
-                return True
-        return False
+        recipe.remove_review(review)
+        user.remove_review(review)
+        del self.__reviews[review_id]
+        
+        return True
+            
 
     # Favourite function
     def add_favourite(self, user: User, recipe: Recipe):

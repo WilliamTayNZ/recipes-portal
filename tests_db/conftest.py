@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker, clear_mappers
 
 from recipe.adapters import database_repository, repository_populate
 from recipe.adapters.orm import mapper_registry, map_model_to_tables
+from recipe.adapters.database_repository import SqlAlchemyRepository
 
 from utils import get_project_root
 

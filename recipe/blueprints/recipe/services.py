@@ -35,6 +35,11 @@ def add_review(recipe_id: int, review_text: str, rating: float, user_name: str, 
     
     return review
 
+def delete_review(review_id: int, user_name: str, repo: AbstractRepository):
+    # Returns True if successful, False otherwise.
+    success = repo.delete_review(review_id, user_name)
+    return success
+    
 
 def get_reviews_for_recipe(recipe_id: int, repo: AbstractRepository) -> List[Review]:
     """Get all reviews for a recipe sorted by date (most recent first)."""

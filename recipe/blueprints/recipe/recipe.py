@@ -65,6 +65,20 @@ def review_on_recipe(recipe_id):
     # When re-rendering with errors, include anchor in the response
     return render_template('recipe.html', recipe=recipe_obj, form=form), 422
 
+@recipe_blueprint.route('/delete_review/<int:review_id>', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    username = session['user_name']
+
+    success = recipe_services.delete_review(review_id, username, repo.repo_instance)
+    
+    if success:
+        # Get recipe_id from the form to redirect back to the recipe page
+        recipe_id = request.form.get('recipe_id')
+        return redirect(url_for('recipe_bp.recipe', recipe_id=recipe_id) + '#reviews')
+    else:
+        abort(403)
+
 
 class ProfanityFree:
     def __init__(self, message=None):
