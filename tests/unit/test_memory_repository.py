@@ -214,5 +214,69 @@ def test_delete_review_updates_recipe_rating(in_memory_repo):
     assert recipe.rating is None
 
 
+def test_review_id_no_collision_after_deletion(in_memory_repo):
+    """
+    Test that reproduces the 403 bug: Review IDs should not be reused after deletion.
+    This follows the exact sequence that caused the bug:
+    1. Add 2 reviews to recipe A
+    2. Delete review 1
+    3. Add 2 reviews to recipe B (should get IDs 3 and 4, NOT reuse 1 and 2)
+    4. Delete review 2
+    5. Add another review to recipe B (should get ID 5, NOT reuse 2)
+    6. Try to delete the new review - should succeed
+    """
+    user = in_memory_repo.get_user('thorke')
+    recipe_a = in_memory_repo.get_recipe_by_id(38)
+    recipe_b = in_memory_repo.get_recipe_by_id(40)
+    
+    # Step 1: Add 2 reviews to recipe A
+    review1 = Review(user, recipe_a, 5, "First review")
+    review2 = Review(user, recipe_a, 4, "Second review")
+    in_memory_repo.add_review(review1)
+    in_memory_repo.add_review(review2)
+    
+    assert review1.id == 1
+    assert review2.id == 2
+    
+    # Step 2: Delete review 1
+    success = in_memory_repo.delete_review(1, user.username)
+    assert success is True
+    
+    # Step 3: Add 2 reviews to recipe B
+    # These should get IDs 3 and 4, NOT 1 and 2
+    review3 = Review(user, recipe_b, 5, "Third review")
+    review4 = Review(user, recipe_b, 4, "Fourth review")
+    in_memory_repo.add_review(review3)
+    in_memory_repo.add_review(review4)
+    
+    # CRITICAL: IDs should NOT be reused
+    assert review3.id == 3, f"Expected ID 3, got {review3.id} - ID collision detected!"
+    assert review4.id == 4, f"Expected ID 4, got {review4.id} - ID collision detected!"
+    
+    # Step 4: Delete review 2 (from recipe A)
+    success = in_memory_repo.delete_review(2, user.username)
+    assert success is True
+    
+    # Step 5: Add another review to recipe B
+    # Should get ID 5, NOT reuse ID 2
+    review5 = Review(user, recipe_b, 3, "Fifth review")
+    in_memory_repo.add_review(review5)
+    
+    # CRITICAL: Should not reuse ID 2
+    assert review5.id == 5, f"Expected ID 5, got {review5.id} - ID collision detected!"
+    
+    # Step 6: Try to delete review5 - should succeed
+    # This was the bug: if ID was reused (ID=2), this would fail with 403
+    # because it would try to delete a different review with the same ID
+    success = in_memory_repo.delete_review(review5.id, user.username)
+    assert success is True, "Failed to delete review - likely due to ID collision bug!"
+    
+    # Verify the review is actually deleted
+    recipe_b_updated = in_memory_repo.get_recipe_by_id(40)
+    review_texts = [r.review_text for r in recipe_b_updated.reviews]
+    assert "Fifth review" not in review_texts
+
+
 # python -m pytest -v tests
 # py -m pytest -v tests/unit/test_memory_repository.py
+# py -m pytest -v tests/unit/test_memory_repository.py::test_review_id_no_collision_after_deletion
