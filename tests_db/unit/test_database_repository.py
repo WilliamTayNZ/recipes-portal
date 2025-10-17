@@ -328,7 +328,6 @@ def test_get_user_favourites(session_factory):
     assert len(favs) >= 1
     assert any(r.id == 701 for r in favs)
 
-@pytest.mark.db
 def test_add_favourite_adds_recipe_to_user_favourites(session_factory):
     """
     Test that add_favourite correctly adds a recipe to a user's favourites.
@@ -361,7 +360,6 @@ def test_add_favourite_adds_recipe_to_user_favourites(session_factory):
     assert recipe_id in fav_ids
 
 
-@pytest.mark.db
 def test_remove_favourite_removes_recipe_from_user_favourites(session_factory):
     """
     Test that remove_favourite correctly removes a recipe from a user's favourites.
@@ -388,7 +386,6 @@ def test_remove_favourite_removes_recipe_from_user_favourites(session_factory):
     assert recipe.id not in fav_ids
 
 
-@pytest.mark.db
 def test_add_favourite_twice_does_not_create_duplicates(session_factory):
     """
     Test that adding the same recipe to favourites twice doesn't create duplicates.
@@ -411,7 +408,6 @@ def test_add_favourite_twice_does_not_create_duplicates(session_factory):
     assert count == 1, "Recipe should appear exactly once in favourites"
 
 
-@pytest.mark.db
 def test_get_user_favourites_returns_recipe_objects_with_full_data(session_factory):
     """
     Test that get_user_favourites returns actual Recipe objects with all data populated
@@ -443,7 +439,6 @@ def test_get_user_favourites_returns_recipe_objects_with_full_data(session_facto
     assert isinstance(getattr(fav_recipe, 'instructions', []), list)
 
 
-@pytest.mark.db
 def test_get_user_favourites_returns_empty_list_for_user_with_no_favourites(session_factory):
     """
     Test that get_user_favourites returns an empty list for a user with no favourites.
@@ -466,7 +461,6 @@ def test_get_user_favourites_returns_empty_list_for_user_with_no_favourites(sess
     assert favs == []
 
 
-@pytest.mark.db
 def test_get_user_favourites_returns_empty_for_nonexistent_user(session_factory):
     """
     Test that get_user_favourites returns an empty list for a user that doesn't exist.
@@ -477,7 +471,6 @@ def test_get_user_favourites_returns_empty_for_nonexistent_user(session_factory)
     assert favs == []
 
 
-@pytest.mark.db
 def test_is_recipe_in_favourites_returns_false_for_nonexistent_user(session_factory):
     """
     Test that is_recipe_in_favourites returns False for a user that doesn't exist.
@@ -489,7 +482,6 @@ def test_is_recipe_in_favourites_returns_false_for_nonexistent_user(session_fact
     assert result is False
 
 
-@pytest.mark.db
 def test_multiple_users_can_favourite_same_recipe(session_factory):
     """
     Test that multiple users can add the same recipe to their favourites independently.
@@ -525,7 +517,6 @@ def test_multiple_users_can_favourite_same_recipe(session_factory):
     assert repo.is_recipe_in_favourites(user2.username, recipe.id) is True
 
 
-@pytest.mark.db
 def test_user_can_have_multiple_favourites(session_factory):
     """
     Test that a user can add multiple different recipes to their favourites.
@@ -560,7 +551,6 @@ def test_user_can_have_multiple_favourites(session_factory):
     assert len(favs) >= 3
 
 
-@pytest.mark.db
 def test_remove_favourite_with_none_values_does_not_error(session_factory):
     """
     Test that remove_favourite handles None values gracefully without errors.
@@ -579,7 +569,6 @@ def test_remove_favourite_with_none_values_does_not_error(session_factory):
         pytest.fail(f"remove_favourite should handle None gracefully, but raised: {e}")
 
 
-@pytest.mark.db
 def test_add_favourite_with_none_values_does_not_error(session_factory):
     """
     Test that add_favourite handles None values gracefully without errors.
@@ -598,7 +587,6 @@ def test_add_favourite_with_none_values_does_not_error(session_factory):
         pytest.fail(f"add_favourite should handle None gracefully, but raised: {e}")
 
 
-@pytest.mark.db
 def test_favourites_persist_across_repository_instances(session_factory):
     """
     Test that favourites are persisted in the database and survive across
@@ -644,7 +632,6 @@ def test_search_by_name(session_factory):
     assert len(results) > 0
     assert any(r.id == first.id for r in results)
 
-@pytest.mark.db
 def test_search_by_name_case_insensitive_partial(session_factory):
     repo = make_repo(session_factory)
 
@@ -663,7 +650,6 @@ def test_search_by_name_case_insensitive_partial(session_factory):
     assert first.name.lower() in page_names
 
 
-@pytest.mark.db
 def test_search_by_author_name_case_insensitive_partial(session_factory):
     repo = make_repo(session_factory)
 
@@ -685,7 +671,6 @@ def test_search_by_author_name_case_insensitive_partial(session_factory):
         assert first.id in page_ids
 
 
-@pytest.mark.db
 def test_search_by_category_name_case_insensitive_partial(session_factory):
     repo = make_repo(session_factory)
 
@@ -706,7 +691,6 @@ def test_search_by_category_name_case_insensitive_partial(session_factory):
         assert first.id in page_ids
 
 
-@pytest.mark.db
 def test_search_by_ingredient_name_case_insensitive_partial(session_factory):
     repo = make_repo(session_factory)
 
