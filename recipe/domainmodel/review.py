@@ -1,8 +1,8 @@
 from datetime import datetime
 
 class Review:
-    def __init__(self, review_id: int, user, recipe, rating, review_text, date=None):
-        self.__id = review_id
+    def __init__(self, user, recipe, rating, review_text, date=None, review_id: int = None):
+        self.__id = review_id  # None for new reviews, will be set by database
         self.__user = user
         self.__recipe = recipe
         self.__rating = rating
@@ -15,7 +15,7 @@ class Review:
     def __eq__(self, other) -> bool:
         if not isinstance(other, Review):
             return False
-        return self.rating == other.rating
+        return self.id == other.id
 
     def __lt__(self, other) -> bool:
         if not isinstance(other, Review):
@@ -23,11 +23,15 @@ class Review:
         return self.rating < other.rating
 
     def __hash__(self) :
-        return hash(self.rating)
+        return hash(self.id)
 
     @property
     def id(self) -> int:
         return self.__id
+    
+    @id.setter
+    def id(self, value: int):
+        self.__id = value
 
     @property
     def user(self):

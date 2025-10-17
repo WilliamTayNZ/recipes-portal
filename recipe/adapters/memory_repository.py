@@ -188,6 +188,20 @@ class MemoryRepository(AbstractRepository):
         recipe = self.get_recipe_by_id(review.recipe.id)
         if recipe is None:
             raise RepositoryException("Recipe not found")
+        
+        # Auto-generate ID if not provided (for new reviews)
+        if review.id is None:
+            # Generate the review ID based on the maximum existing ID to avoid collisions
+            # Using len() would cause ID reuse after deletions!
+            if self.__reviews:
+                max_id = max(self.__reviews.keys())
+                review.id = max_id + 1
+            else:
+                review.id = 1
+
+            # OLD BUGGY VERSION: Using len() causes ID reuse after deletions! 
+            # hence test_Review_id_no_colission_after_deletion fails
+            # review.id = len(self.__reviews) + 1
             
         recipe.add_review(review)
         review.user.add_review(review)
@@ -196,13 +210,20 @@ class MemoryRepository(AbstractRepository):
         print("Added a review successfully")
 
     def delete_review(self, review_id: int, username: str):
+        print(f"[DEBUG] Attempting to delete review_id={review_id} by username={username}")
+        print(f"[DEBUG] Available review IDs: {list(self.__reviews.keys())}")
+        
         review = self.__reviews.get(review_id)
 
         if review is None:
+            print(f"[DEBUG] Review {review_id} not found in repository")
             return False
 
+        print(f"[DEBUG] Review found. Owner: {review.user.username}")
+        
         # Check that the user created this review
         if review.user.username != username:
+            print(f"[DEBUG] Username mismatch: {review.user.username} != {username}")
             return False
 
         recipe = review.recipe
@@ -212,6 +233,7 @@ class MemoryRepository(AbstractRepository):
         user.remove_review(review)
         del self.__reviews[review_id]
         
+        print(f"[DEBUG] Review {review_id} deleted successfully")
         return True
             
 

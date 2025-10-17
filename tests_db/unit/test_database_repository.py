@@ -127,7 +127,7 @@ def test_repo_can_add_a_review(session_factory):
     # Count reviews before adding
     initial_review_count = len(recipe.reviews)
 
-    review = Review(69696969, user, recipe, 5, "Dancer is the GOAT")
+    review = Review(user, recipe, 5, "Dancer is the GOAT")
     repo.add_review(review)
 
     # Reload the recipe from database to get updated reviews
@@ -138,6 +138,7 @@ def test_repo_can_add_a_review(session_factory):
     
     # Verify the review details
     added_review = updated_recipe.reviews[-1]  # Get the last added review
+    assert added_review.id is not None  # ID should be auto-generated
     assert added_review.rating == 5
     assert added_review.review_text == "Dancer is the GOAT"
     assert added_review.user.username == 'william'
@@ -150,7 +151,7 @@ def test_repo_can_delete_a_review(session_factory):
     recipe = repo.get_recipe_by_id(38)
     
     # Add a review
-    review = Review(12345, user, recipe, 4, "Great recipe!")
+    review = Review(user, recipe, 4, "Great recipe!")
     repo.add_review(review)
     
     # Reload recipe to get the review
@@ -181,7 +182,7 @@ def test_repo_cannot_delete_another_users_review(session_factory):
     recipe = repo.get_recipe_by_id(38)
     
     # Add a review as william
-    review = Review(54321, user, recipe, 5, "Amazing dish!")
+    review = Review(user, recipe, 5, "Amazing dish!")
     repo.add_review(review)
     
     # Reload recipe to get the review
@@ -215,8 +216,8 @@ def test_review_updates_recipe_rating(session_factory):
     recipe = repo.get_recipe_by_id(38)
     
     # Add multiple reviews
-    review1 = Review(11111, user1, recipe, 4, "Good!")
-    review2 = Review(22222, user2, recipe, 5, "Excellent!")
+    review1 = Review(user1, recipe, 4, "Good!")
+    review2 = Review(user2, recipe, 5, "Excellent!")
     
     repo.add_review(review1)
     repo.add_review(review2)
@@ -239,12 +240,42 @@ def test_user_reviews_are_tracked(session_factory):
     initial_review_count = len(user.reviews)
     
     # Add a review
-    review = Review(77777, user, recipe, 5, "Perfect!")
+    review = Review(user, recipe, 5, "Perfect!")
     repo.add_review(review)
     
     # Reload user and verify review is tracked
     updated_user = repo.get_user('william')
     assert len(updated_user.reviews) == initial_review_count + 1
+
+
+def test_review_ids_are_globally_unique(session_factory):
+    """Test that review IDs are globally unique across different recipes"""
+    repo = make_repo(session_factory)
+    
+    user = repo.get_user('william')
+    recipe1 = repo.get_recipe_by_id(38)
+    recipe2 = repo.get_recipe_by_id(40)
+    
+    # Add review to first recipe
+    review1 = Review(user, recipe1, 5, "Great recipe 1!")
+    repo.add_review(review1)
+    
+    # Add review to second recipe
+    review2 = Review(user, recipe2, 4, "Great recipe 2!")
+    repo.add_review(review2)
+    
+    # Reload recipes to get updated reviews
+    updated_recipe1 = repo.get_recipe_by_id(38)
+    updated_recipe2 = repo.get_recipe_by_id(40)
+    
+    # Find the reviews we just added
+    added_review1 = [r for r in updated_recipe1.reviews if r.review_text == "Great recipe 1!"][0]
+    added_review2 = [r for r in updated_recipe2.reviews if r.review_text == "Great recipe 2!"][0]
+    
+    # Verify IDs are different (globally unique)
+    assert added_review1.id != added_review2.id
+    assert added_review1.id is not None
+    assert added_review2.id is not None
 
 
 # FAVOURITE TESTS (there's a lot, will put in its own file soon)
