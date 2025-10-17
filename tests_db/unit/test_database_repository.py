@@ -40,7 +40,7 @@ def test_repo_does_not_retrieve_a_non_existent_user(session_factory):
 
 # Author tests
 def test_repo_can_add_and_retrieve_author(session_factory):
-    """Test adding an author and retrieving it by name"""
+    """Test adding an author and retrieving it by ID"""
     repo = make_repo(session_factory)
 
     # Create a new author with a unique ID
@@ -49,8 +49,8 @@ def test_repo_can_add_and_retrieve_author(session_factory):
 
     repo.add_author(author)
 
-    # Retrieve the author by name
-    retrieved_author = repo.get_author_by_name("Test Chef Gordon")
+    # Retrieve the author by ID
+    retrieved_author = repo.get_author_by_id(test_author_id)
 
     assert retrieved_author is not None
     assert retrieved_author.id == test_author_id

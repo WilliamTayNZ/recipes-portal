@@ -225,11 +225,11 @@ class SqlAlchemyRepository(AbstractRepository):
             ).all()
             return authors
 
-    def get_author_by_name(self, author_name: str):
-        """Get a single author by exact name match"""
+    def get_author_by_id(self, author_id: int):
+        """Get a single author by ID"""
         with self._session_cm as scm:
             author = scm.session.query(Author).filter(
-                Author._Author__name == author_name
+                Author._Author__id == author_id
             ).first()
             return author
 
