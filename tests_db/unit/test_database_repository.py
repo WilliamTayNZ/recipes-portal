@@ -38,6 +38,89 @@ def test_repo_does_not_retrieve_a_non_existent_user(session_factory):
     assert user is None
 
 
+# Author tests
+def test_repo_can_add_and_retrieve_author(session_factory):
+    """Test adding an author and retrieving it by name"""
+    repo = make_repo(session_factory)
+
+    # Create a new author with a unique ID
+    test_author_id = 999001
+    author = Author(test_author_id, "Test Chef Gordon")
+
+    repo.add_author(author)
+
+    # Retrieve the author by name
+    retrieved_author = repo.get_author_by_name("Test Chef Gordon")
+
+    assert retrieved_author is not None
+    assert retrieved_author.id == test_author_id
+    assert retrieved_author.name == "Test Chef Gordon"
+
+
+def test_repo_cannot_add_duplicate_author(session_factory):
+    """Test that adding a duplicate author (same ID) doesn't create duplicates"""
+    repo = make_repo(session_factory)
+
+    test_author_id = 999002
+    author1 = Author(test_author_id, "Chef Duplicate Test")
+    author2 = Author(test_author_id, "Chef Duplicate Test Modified")
+
+    repo.add_author(author1)
+    repo.add_author(author2)  # Should not create a duplicate
+
+    # Query all authors with this ID - there should only be one
+    with repo._session_cm as scm:
+        from recipe.adapters.orm import authors
+        from sqlalchemy import select
+
+        result = scm.session.execute(
+            select(authors).where(authors.c.author_id == test_author_id)
+        ).fetchall()
+
+        # Should only have one author with this ID
+        assert len(result) == 1
+
+
+# Category tests
+def test_repo_can_add_and_retrieve_category(session_factory):
+    """Test adding a category and retrieving it by name"""
+    repo = make_repo(session_factory)
+
+    # Create a new category
+    category = Category("Test Fusion Cuisine")
+
+    repo.add_category(category)
+
+    # Retrieve the category by name
+    retrieved_category = repo.get_category_by_name("Test Fusion Cuisine")
+
+    assert retrieved_category is not None
+    assert retrieved_category.name == "Test Fusion Cuisine"
+
+
+def test_repo_cannot_add_duplicate_category(session_factory):
+    """Test that adding a duplicate category (same name) doesn't create duplicates"""
+    repo = make_repo(session_factory)
+
+    category1 = Category("Test Unique Category")
+    category2 = Category("Test Unique Category")
+
+    repo.add_category(category1)
+    repo.add_category(category2)  # Should not create a duplicate
+
+    # Query all categories with this name - there should only be one
+    with repo._session_cm as scm:
+        from recipe.adapters.orm import categories
+        from sqlalchemy import select
+
+        result = scm.session.execute(
+            select(categories).where(categories.c.category_name == "Test Unique Category")
+        ).fetchall()
+
+        # Should only have one category with this name
+        assert len(result) == 1
+
+
 # Recipe tests
 def test_add_and_get_recipe(session_factory):
     """Test adding and retrieving a recipe"""
@@ -744,6 +827,3 @@ def test_get_featured_recipes(session_factory):
 
 
 # py -m pytest -v tests_db/unit/test_database_repository.py
-
-
-
