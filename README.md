@@ -1,15 +1,35 @@
-# COMPSCI 235 - Starter Repository for the CS235 Recipe Portal
-This is a starter repository for the recipes webapp project of CompSci 235 in Semester 2, 2025.
+# 🍳 Recipes Portal
 
-## Description
+A web application for browsing and discovering recipes. Built as a team project for COMPSCI 235 (Software Development Methodologies).
 
-This repository contains a partial implementation of the domain model. It contains unit tests which can be run through pytest. It also contains a simple Flask application that renders content of a Recipe object instance from our domain model on a blank HTML page. You'll be expanding the domain model implementation, and you have the freedom to add, modify or remove test cases as needed.
+**NOTE**: The `.env` file is included in this repository for educational purposes to demonstrate configuration practices. Since this is a classroom project running on localhost with no production deployment, the credentials are non-sensitive placeholders.
+
+## About This Project
+
+Recipes Portal is a web application built with Flask, HTML (with Jinja2), and CSS. It provides an interactive interface for exploring recipes with nutritional insights. The application features a robust domain model with comprehensive unit tests and a clean web interface that displays recipe information, including a custom health star rating system.
+
+### Key Features
+
+- **Recipe Browsing**: Browse and explore recipes with paginated search functionality
+- **Filtered Search**: Filter recipes by name, author, or category
+- **Save Favorites**: Log in or register to save your favorite recipes for quick access
+- **Recipe Reviews**: Read user reviews and ratings for recipes, and log in or register to post your own review (1-5 stars)
+- **Detailed Recipe Information**: View complete recipe information including images, ingredients, instructions, and nutrition values
+- **Health Star Ratings**: 0–5 health star ratings for each recipe (see [Health Star Rating Formula](#health-star-rating-formula) for details)
+- **Automated Testing**: Comprehensive unit, integration, and end-to-end testing
+- **Extensible Domain Model**: Well-structured, object-oriented design with support for recipes, users, reviews, favorites, and more
+- **Flexible Data Storage**: Works with both an in-memory storage layer and a local SQLite database
+
+## Prerequisites
+
+- Python 3.8+
+- pip
 
 ## Installation
 
-**Installation via requirements.txt**
+### Setup Steps
 
-**Windows**
+#### Windows
 ```shell
 $ cd <project directory>
 $ py -3 -m venv venv
@@ -17,7 +37,7 @@ $ venv\Scripts\activate
 $ pip install -r requirements.txt
 ```
 
-**MacOS**
+#### macOS/Linux
 ```shell
 $ cd <project directory>
 $ python3 -m venv venv
@@ -25,7 +45,13 @@ $ source venv/bin/activate
 $ pip install -r requirements.txt
 ```
 
-When using PyCharm, set the virtual environment using 'File or PyCharm'->'Settings' and select your project from the left menu. Select 'Project Interpreter', click on the gearwheel button and select 'Add Interpreter'. Click the 'Existing environment' radio button to select the virtual environment. 
+### Data Storage
+
+This application supports two data storage backends:
+
+- **Memory Repository**: All data is stored in memory during runtime. Useful for testing and development.
+- **SQLite Database**: Data is persisted in a local SQLite database. When you run `flask run`, the database will be automatically populated with recipe data on first run.
+
 
 ## Execution
 
@@ -39,19 +65,23 @@ $ flask run
 
 ## Testing
 
-After you have configured pytest as the testing tool for PyCharm (File - Settings - Tools - Python Integrated Tools - Testing), you can then run tests from within PyCharm by right-clicking the tests folder and selecting "Run pytest in tests".
+From a terminal in the root folder of the project (within the activated virtual environment), run the tests with:
 
-Alternatively, from a terminal in the root folder of the project, you can also call 'python -m pytest tests' to run all the tests. PyCharm also provides a built-in terminal, which uses the configured virtual environment. 
+```shell
+$ python -m pytest -v tests
+```
+
+This will run all unit tests with verbose output, showing detailed information about each test. 
 
 ## Configuration
 
 The *project directory/.env* file contains variable settings. They are set with appropriate values.
 
-* `FLASK_APP`: Entry point of the application (should always be `wsgi.py`).
+* `FLASK_APP`: Entry point of the application (`wsgi.py`).
 * `FLASK_ENV`: The environment in which to run the application (either `development` or `production`).
 * `SECRET_KEY`: Secret key used to encrypt session data.
 * `TESTING`: Set to False for running the application. Overridden and set to True automatically when testing the application.
-* `WTF_CSRF_SECRET_KEY`: Secret key used by the WTForm library.
+* `WTF_CSRF_SECRET_KEY`: Secret key used by the WTForms library.
  
 ## Data sources
 
@@ -77,9 +107,3 @@ The formula is designed to reward nutrients that are generally considered benefi
 The result is rounded to one decimal place and **clamped between 0 and 5 stars**.  
 
 If a recipe is missing key nutrition data (calories, sugar, saturated fat, sodium, fiber, or protein), the health star rating is shown as: “Health star rating unavailable”.
-
-
-
-
-
-
