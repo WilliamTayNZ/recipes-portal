@@ -4,6 +4,13 @@ A web application for browsing and discovering recipes. Built as a team project 
 
 **NOTE**: The `.env` file is included in this repository for educational purposes to demonstrate configuration practices. Since this is a classroom project running on localhost with no production deployment, the credentials are non-sensitive placeholders.
 
+## 🎥 Demo Videos
+[Homepage demo](https://github.com/user-attachments/assets/7690d89d-f13d-4293-89f5-fe8c604a445f)
+
+[Browse demo](https://github.com/user-attachments/assets/54af369d-c85a-40b0-b452-deb0cfba11fb)
+
+[Logged in demo](https://github.com/user-attachments/assets/dbcacda4-b25c-4ca0-9535-aeddca7cafb8)
+
 ## About This Project
 
 Recipes Portal is a web application built with Flask, HTML (with Jinja2), and CSS. It provides an interactive interface for exploring recipes with nutritional insights. The application features a robust domain model with comprehensive unit tests and a clean web interface that displays recipe information, including a custom health star rating system.
